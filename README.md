@@ -9,7 +9,7 @@ RoboAudit.mbt is a MoonBit-first native CLI for turning robot and embodied-AI ep
 - Recomputed success counts and rates, Wilson 95% confidence intervals, action-step groups, failure counts/proportions, stage funnels, and skipped reasons.
 - RA001 through RA015 audit rules, including retry disclosure, protocol mismatches, seed overlap, and artifact verification evidence.
 - SHA-256 protocol fingerprints, sorted file manifests, and direct file verification using a binary-safe pure MoonBit implementation.
-- 97 automated tests, native release benchmarks, CI, golden report hashes, and synthetic/anonymized fixtures.
+- 100 automated tests, native release benchmarks, CI, golden report hashes, and synthetic/anonymized fixtures.
 
 Input CSV intentionally supports only simple unquoted fields. Use JSON or JSONL when values contain commas or embedded newlines. No models, videos, raw datasets, simulator assets, credentials, or unknown-license content are included.
 
@@ -56,6 +56,8 @@ roboaudit verify-file <path> <sha256>
 - [Provenance and safe-data policy](docs/provenance.md)
 - [AI assistance](docs/ai-assistance.md)
 - [Native benchmark evidence](benchmarks/README.md)
+- [Runnable demo](hackathon/demo-script.md)
+- [Submission requirements matrix](hackathon/requirements-matrix.md)
 
 Protocol protection can be demonstrated with `examples/incompatible-protocols/`; skipped candidate and retry disclosure is demonstrated by `examples/minimal/skipped-and-retries.json`.
 

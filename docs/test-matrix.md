@@ -11,7 +11,7 @@ Every audit rule has an explicit triggering case and a non-triggering boundary o
 | RA005 | `declared episode count mismatch is RA005` | `RoboSyn field aliases normalize without count finding` |
 | RA006 | `empty skipped reason remains disclosed` | `absent skipped candidates pass RA006` |
 | RA007 | `audit recomputes summary and retry fields` | `declared retry policy permits later attempts` |
-| RA008 | `audit recomputes summary and retry fields` | `candidate at final valid index is accepted` |
+| RA008 | `audit recomputes summary and retry fields`; `negative candidate index is RA008` | `candidate at final valid index is accepted`; `disclosed skipped candidate expands candidate population` |
 | RA009 | `compare rejects observation mismatch with RA009` | `compatible comparison reports rate difference` |
 | RA010 | `compare rejects evaluator mismatch with RA010` | `compatible comparison reports rate difference` |
 | RA011 | `training and evaluation seed overlap is RA011` | `disjoint training and evaluation seeds pass RA011` |
@@ -20,4 +20,4 @@ Every audit rule has an explicit triggering case and a non-triggering boundary o
 | RA014 | `successful timeout violation is RA014` | `non-negative action steps within timeout pass RA014` |
 | RA015 | `missing provenance or code revision is RA015` | `complete provenance and code revision pass RA015` |
 
-Additional tests cover malformed/non-finite input, JSON escaping, Unicode, JSONL/CSV adapters, deterministic ordering, fixed JSON/Markdown golden hashes, Wilson interval boundaries, grouped statistics, failure proportions/deltas, extended canonical metadata, manifest hashing primitives, and the public library surface. The native suite currently contains 97 tests.
+Additional tests cover malformed/non-finite input, JSON escaping, Unicode, JSONL/CSV/RoboSyn feasibility adapters, deterministic ordering, fixed JSON/Markdown golden hashes, Wilson interval boundaries, grouped statistics, failure proportions/deltas, extended canonical metadata, manifest hashing primitives, and the public library surface. The native suite currently contains 100 tests.

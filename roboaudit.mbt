@@ -288,6 +288,22 @@ fn parse_run(value : Json) -> Run {
     json_string(json_field(value, "task")),
     string_or(json_string(object_field(value, "config", "task")), "unknown"),
   )
+  let canonical_skipped = parse_skipped_reasons(json_field(value, "skipped"))
+  let skipped_reasons = if canonical_skipped.is_empty() {
+    parse_skipped_reasons(
+      object_field(value, "feasibility_filter", "skipped_seeds"),
+    )
+  } else {
+    canonical_skipped
+  }
+  let retry_policy = match json_string(json_field(value, "retry_policy")) {
+    Some(policy) => policy
+    None =>
+      match object_field(value, "feasibility_filter", "enabled") {
+        Some(True) => "feasibility-filter"
+        _ => "unspecified"
+      }
+  }
   {
     schema_version: string_or(
       json_string(json_field(value, "schema_version")),
@@ -358,12 +374,9 @@ fn parse_run(value : Json) -> Run {
     declared_failure_count: json_int(
       object_field(value, "summary", "failure_count"),
     ),
-    retry_policy: string_or(
-      json_string(json_field(value, "retry_policy")),
-      "unspecified",
-    ),
+    retry_policy,
     episodes: parse_episodes(json_field(value, "episodes")),
-    skipped_reasons: parse_skipped_reasons(json_field(value, "skipped")),
+    skipped_reasons,
     failure_annotations: parse_failure_annotations(
       json_field(value, "failure_annotations"),
     ),
@@ -638,6 +651,8 @@ fn add_issue(issues : Array[String], rule : String, message : String) -> Unit {
 ///|
 fn run_issues(run : Run) -> Array[String] {
   let issues = []
+  let disclosed_candidate_count = run.episodes.length() +
+    run.skipped_reasons.length()
   if run.provenance == "unspecified" || run.code_revision == "unspecified" {
     add_issue(issues, "RA015", "missing provenance or code revision")
   }
@@ -732,9 +747,9 @@ fn run_issues(run : Run) -> Array[String] {
     }
     match episode.candidate_index {
       Some(candidate) =>
-        if candidate >= run.episodes.length() {
+        if candidate < 0 || candidate >= disclosed_candidate_count {
           add_issue(
-            issues, "RA008", "candidate_index exceeds final episode count",
+            issues, "RA008", "candidate_index exceeds disclosed candidate population",
           )
         }
       None => ()

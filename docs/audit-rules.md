@@ -9,7 +9,7 @@
 | RA005 | Declared episode count differs from parsed episodes |
 | RA006 | Skipped candidates are present and must be disclosed |
 | RA007 | Retry attempt exists but retry policy is absent |
-| RA008 | Candidate index exceeds final episode count |
+| RA008 | Candidate index falls outside the disclosed completed-plus-skipped candidate population |
 | RA009 | Compared observation modes differ |
 | RA010 | Compared evaluator or success definitions differ |
 | RA011 | Training and evaluation seed sets overlap |

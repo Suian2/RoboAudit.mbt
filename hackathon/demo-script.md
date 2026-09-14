@@ -1,5 +1,13 @@
 # Demo script
 
+Run the complete demo from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File hackathon/demo.ps1
+```
+
+The runner treats audit findings as expected exit status 1 and fails on any unexpected command result. The individual commands are listed below for narrated recording.
+
 ```powershell
 moon test --target native
 moon run --target native cmd/main -- report examples/minimal/canonical-clean.json

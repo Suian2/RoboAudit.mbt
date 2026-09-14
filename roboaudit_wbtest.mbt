@@ -256,6 +256,31 @@ test "candidate at final valid index is accepted" {
 }
 
 ///|
+test "negative candidate index is RA008" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"candidate_index":-1,"seed":1,"success":true}]}
+  assert_true(validate_json(input).contains("RA008"))
+}
+
+///|
+test "disclosed skipped candidate expands candidate population" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","retry_policy":"candidate-filter","episodes":[{"episode_index":0,"candidate_index":0,"seed":1,"success":true},{"episode_index":1,"candidate_index":2,"attempt_index":1,"seed":3,"success":true}],"skipped":[{"candidate_index":1,"reason":"infeasible"}]}
+  assert_true(!validate_json(input).contains("RA008"))
+}
+
+///|
+test "RoboSyn feasibility filter normalizes skip and retry disclosure" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"candidate_index":0,"seed":1,"success":true},{"episode_index":1,"candidate_index":2,"episode_attempt_index":1,"seed":3,"success":true}],"feasibility_filter":{"enabled":true,"skipped_seed_count":1,"skipped_seeds":[{"candidate_index":1,"reason":"expert_action_generation_failed"}]}}
+  let validation = validate_json(input)
+  assert_true(validation.contains("RA006"))
+  assert_true(!validation.contains("RA007"))
+  assert_true(!validation.contains("RA008"))
+  assert_true(report_json(input).contains("expert_action_generation_failed"))
+}
+
+///|
 test "declared retry policy permits later attempts" {
   let input =
     #|{"task":"t","evaluator_version":"v","retry_policy":"up-to-two","episodes":[{"episode_index":0,"attempt_index":1,"seed":1,"success":true}]}

@@ -9,7 +9,7 @@ RoboAudit.mbt 是一个以 MoonBit 为主体实现的原生命令行工具和可
 - 重算成功数与成功率，并计算 Wilson 95% 置信区间、动作步分组统计、失败频数/比例、阶段漏斗和跳过原因。
 - 实现 RA001–RA015，包括重试披露、协议不兼容、训练/评测种子重叠、artifact 校验及 provenance/code revision 完整性。
 - 使用纯 MoonBit、二进制安全的 SHA-256 生成协议指纹、排序 manifest，并直接校验文件。
-- 包含 97 项自动测试、native release benchmark、CI、固定报告哈希，以及合成或匿名 fixture。
+- 包含 100 项自动测试、native release benchmark、CI、固定报告哈希，以及合成或匿名 fixture。
 
 CSV 输入有意限定为简单无引号字段；值含逗号或换行时请使用 JSON/JSONL。仓库不包含模型、视频、原始数据集、仿真资产、凭据或许可不明内容。
 
@@ -56,6 +56,8 @@ roboaudit verify-file <path> <sha256>
 - [来源与安全数据政策](docs/provenance.md)
 - [AI 辅助说明](docs/ai-assistance.md)
 - [Native benchmark 证据](benchmarks/README.md)
+- [可执行 Demo](hackathon/demo-script.md)
+- [提交需求矩阵](hackathon/requirements-matrix.md)
 
 `examples/incompatible-protocols/` 演示不兼容协议保护；`examples/minimal/skipped-and-retries.json` 演示跳过候选与重试披露。
 

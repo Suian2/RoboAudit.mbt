@@ -4,4 +4,4 @@
 
 Each `Episode` normalizes `episode_index`, optional `candidate_index`, optional `attempt_index`, optional `seed`, `success`, optional `action_steps`, optional `duration_ms`, optional `failure_type`, `stages`, and `artifact_refs`. `Stage`, `ArtifactRef`, `Episode`, `Run`, and `AuditFinding` are public MoonBit model types.
 
-Fields absent from a source log retain an explicit fallback or optional value; they are never invented. JSONL treats each non-empty line as an episode object and takes run metadata from the first record. CSV requires `episode_index` and `success` headers and deliberately supports only unquoted fields.
+Fields absent from a source log retain an explicit fallback or optional value; they are never invented. RoboSyn `feasibility_filter.skipped_seeds` normalizes to skipped reasons, and an enabled feasibility filter satisfies retry-disclosure semantics for `episode_attempt_index`. JSONL treats each non-empty line as an episode object and takes run metadata from the first record. CSV requires `episode_index` and `success` headers and deliberately supports only unquoted fields.
