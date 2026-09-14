@@ -2,6 +2,10 @@
 
 RoboAudit.mbt 是一个以 MoonBit 为主体实现的原生命令行工具和可复用库，用于把机器人与具身智能 episode 日志转换成可审计、可复现的评测证据。
 
+## 问题
+
+单一成功率无法说明评测种子是否重复、候选是否被跳过、回合是否重试、交付物是否校验，以及两次运行是否采用可比较的协议。RoboAudit 从 episode 记录重新计算结果，并用稳定的规则编号揭示这些缺失披露。
+
 ## 功能
 
 - 支持 canonical JSON、JSONL episode 流、简单无引号 CSV，以及 RoboSyn 风格 `evaluation_metrics.json` 的真实字段别名。
@@ -44,6 +48,48 @@ roboaudit verify-file <path> <sha256>
 除 `report-json` 与 `report-csv` 快捷命令外，也支持 `report <file> --format json|csv|markdown`。
 
 `validate` 和 `audit` 输出 `valid` 或稳定的 `RAxxx` 发现；存在发现时以状态码 1 退出。用法错误以状态码 2 退出，文件不存在及解析错误也会非零退出。`summarize` / `report-json` 输出结构化 JSON，`report` 输出 Markdown。非空 `skipped` 列表会被明确标记，避免成功率掩盖被排除的候选。
+
+## 示例
+
+```powershell
+# 有效 canonical 输入与 Markdown 报告
+moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
+
+# 刻意构造的异常输入；预期退出码为 1
+moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
+
+# observation 不兼容时拒绝给出误导性的成功率差值
+moon run --target native cmd/main -- compare examples/incompatible-protocols/pure-observation.json examples/incompatible-protocols/public-pose.json
+
+# 运行完整讲解 Demo
+powershell -ExecutionPolicy Bypass -File hackathon/demo.ps1
+```
+
+## Schema 与审计规则
+
+公开 MoonBit 模型由 `Run`、`Episode`、`Stage`、`ArtifactRef` 和 `AuditFinding` 组成。源数据缺失的字段保持可选，或使用明确的 `unspecified` 回退。详见 [canonical schema](docs/schema.md)、[RA001–RA015 目录](docs/audit-rules.md)和[规则正反例矩阵](docs/test-matrix.md)。
+
+## 架构
+
+解析、归一化、校验、统计、协议比较、哈希和报告渲染全部由 MoonBit 实现；`cmd/main` 只处理 native 参数和文件 I/O。详见[架构说明](docs/architecture.md)。
+
+## 测试与性能
+
+Native 测试套件包含 100 项测试，覆盖异常/非有限数值、adapter 字段别名、统计边界、每条审计规则、确定性输出、黄金哈希和 SHA-256 向量。运行 `moon test --target native`；1,000 episode 实测结果及适用边界见 [benchmark 证据](benchmarks/README.md)。
+
+## 2026 年 9 月黑客松新增工作
+
+本期开始前，仓库只是可编译的 MoonBit 骨架，没有审计实现。本期完成了 canonical 模型、四种输入形态、三种报告格式、RA001–RA015、协议安全比较、manifest、100 项测试、CI、benchmark、fixture、文档和可执行 Demo。既有 RoboSynChallenge 项目仅作为只读需求来源，不被复制，也不计入本期工作量。
+
+## AI 辅助与来源
+
+AI 用于辅助实现、测试、文档和故障排查；贡献者仍负责审查、解释、质量和发布决策。仓库只提交手写合成/匿名 fixture 与聚合元数据证据。详见 [AI 辅助说明](docs/ai-assistance.md)、[来源政策](docs/provenance.md)和[参考证据](docs/reference-evidence.md)。
+
+## Roadmap
+
+- 贡献者确认公开仓库和 Mooncakes 身份后冻结并发布 v0.1.0。
+- 仅在真实用户需要时增加带引号的 RFC 4180 CSV 输入；当前简单 CSV 边界保持明确。
+- Native P0/P1 发布后再探索 MoonBit WASM 报告查看器，并复用同一核心逻辑。
 
 ## 文档
 

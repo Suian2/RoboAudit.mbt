@@ -21,7 +21,7 @@ Verified locally on 2026-09-14. “Complete” means implemented and backed by t
 | Deterministic JSON/Markdown/CSV | Complete | Explicit output order, determinism tests, fixed JSON/Markdown SHA-256 golden tests |
 | 3+ safe fixtures | Complete | Eight synthetic/anonymized JSON/JSONL/CSV fixture files; no reference media or raw logs |
 | 60+ automated tests | Complete | Native suite: 100/100 passing |
-| CI | Complete | Windows native format/info/check/test/build, smoke, exit-code, manifest, package checks |
+| CI | Complete | Windows native format/info/check/test/build, smoke, help/version, finding/usage/path exit codes, manifest, package checks |
 | English and Chinese README | Complete | `README.md`, `README.zh-CN.md` |
 | License/NOTICE/provenance/AI disclosure | Complete | Apache-2.0 `LICENSE`, `NOTICE`, `docs/provenance.md`, `docs/ai-assistance.md` |
 | One-page proposal and Demo | Complete locally | `hackathon/one-page-proposal.md`, `hackathon/demo-script.md`, runnable `hackathon/demo.ps1` |
@@ -30,3 +30,7 @@ Verified locally on 2026-09-14. “Complete” means implemented and backed by t
 | Clean-directory reproduction | Complete | `docs/reproducibility.md`; fresh no-hardlinks clone passed all gates and stayed content-clean |
 | Public repository URL/module identity | External decision required | `moon.mod` deliberately retains an empty repository field |
 | Public push, Mooncakes release, registration, final submission | External confirmation required | Not performed or claimed |
+
+## MoonBit implementation share
+
+At this verification point, Git-tracked nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 79 in two `*.yml` automation files. MoonBit therefore accounts for 94.64% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.

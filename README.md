@@ -2,6 +2,10 @@
 
 RoboAudit.mbt is a MoonBit-first native CLI for turning robot and embodied-AI episode logs into auditable, reproducible evaluation evidence.
 
+## Problem
+
+A single success rate cannot show whether evaluation seeds were duplicated, candidates were skipped, attempts were retried, artifacts were verified, or two runs used comparable protocols. RoboAudit recalculates results from episode records and surfaces those missing disclosures with stable rule identifiers.
+
 ## Features
 
 - Canonical JSON, JSONL episode streams, simple unquoted CSV, and RoboSyn-style `evaluation_metrics.json` aliases.
@@ -44,6 +48,48 @@ roboaudit verify-file <path> <sha256>
 `report <file> --format json|csv|markdown` is supported alongside the `report-json` and `report-csv` shortcuts.
 
 `validate` and `audit` print `valid` or stable `RAxxx` findings and exit with status 1 when findings exist. Invalid usage exits 2; missing files and parsing failures are also non-zero. `summarize` and `report-json` emit structured JSON; `report` emits Markdown. A non-empty `skipped` list is deliberately flagged so a success rate cannot conceal excluded candidates.
+
+## Examples
+
+```powershell
+# Valid canonical input and a Markdown report
+moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
+
+# Deliberately malformed input; expected exit status is 1
+moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
+
+# Refuses to report a success-rate delta across incompatible observations
+moon run --target native cmd/main -- compare examples/incompatible-protocols/pure-observation.json examples/incompatible-protocols/public-pose.json
+
+# Run the complete narrated demo
+powershell -ExecutionPolicy Bypass -File hackathon/demo.ps1
+```
+
+## Schema and audit rules
+
+The public MoonBit model consists of `Run`, `Episode`, `Stage`, `ArtifactRef`, and `AuditFinding`. Missing source fields remain optional or use an explicit `unspecified` fallback. See the [canonical schema](docs/schema.md), [RA001–RA015 catalogue](docs/audit-rules.md), and [positive/negative rule matrix](docs/test-matrix.md).
+
+## Architecture
+
+All parsing, normalization, validation, statistics, protocol comparison, hashing, and rendering live in MoonBit. `cmd/main` only supplies native argument handling and file I/O. See [architecture](docs/architecture.md).
+
+## Tests and performance
+
+The native suite contains 100 tests, including malformed/non-finite input, adapter aliases, statistical boundaries, every audit rule, deterministic output, golden hashes, and SHA-256 vectors. Run `moon test --target native`; measured 1,000-episode results and their limitations are recorded in [benchmark evidence](benchmarks/README.md).
+
+## September 2026 Hackathon work
+
+Before this work, the repository was only a compiling MoonBit skeleton and contained no audit implementation. The September work built the canonical model, four input shapes, three report formats, RA001–RA015, protocol-safe comparison, manifests, 100 tests, CI, benchmarks, fixtures, documentation, and the runnable Demo. The pre-existing RoboSynChallenge project is used only as a read-only requirements source and is not included or claimed as hackathon work.
+
+## AI assistance and provenance
+
+AI assisted implementation, tests, documentation, and troubleshooting; the contributor remains responsible for review, explanation, quality, and publication. Only hand-written synthetic/anonymized fixtures and aggregate metadata evidence are committed. See [AI assistance](docs/ai-assistance.md), [provenance policy](docs/provenance.md), and [reference evidence](docs/reference-evidence.md).
+
+## Roadmap
+
+- Freeze and publish v0.1.0 after the contributor confirms the public repository and Mooncakes identity.
+- Add quoted RFC 4180 CSV input only if real users need it; current simple CSV scope stays explicit.
+- Explore a MoonBit WASM report viewer after the native P0/P1 release, reusing the same core logic.
 
 ## Documentation
 
