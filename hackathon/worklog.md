@@ -8,3 +8,4 @@
 - Added synthetic and anonymized fixtures only; no remote artifacts or private paths were copied.
 - Verified `moon fmt`, `moon info`, `moon check --target native`, `moon test --target native`, `moon build --target native`, and CLI demo commands locally.
 - Read one formal evaluation JSON only to extract a SHA-256, field names, and aggregate schema evidence; updated aliases for `summary.episode_count`, `config.timeout_action_steps`, and `episode_attempt_index`. No raw content was committed.
+- Added Wilson 95% intervals, deterministic JSON reports, protocol fingerprints, safe compare behavior, CLI aliases for the required command names, and public-API/boundary tests. Native test total reached 31/31 passing.

@@ -19,6 +19,7 @@ priv struct Run {
   protocol : String
   observation_mode : String
   evaluator_version : String
+  success_definition : String
   timeout_steps : Int?
   declared_episode_count : Int?
   declared_success_count : Int?
@@ -156,6 +157,10 @@ fn parse_run(value : Json) -> Run {
     ),
     evaluator_version: string_or(
       json_string(json_field(value, "evaluator_version")),
+      "unspecified",
+    ),
+    success_definition: string_or(
+      json_string(json_field(value, "success_definition")),
       "unspecified",
     ),
     timeout_steps: match json_int(json_field(value, "timeout_steps")) {
@@ -337,6 +342,131 @@ fn rate_text(successes : Int, total : Int) -> String {
 }
 
 ///|
+fn wilson_interval(successes : Int, total : Int) -> (Double, Double) {
+  if total == 0 {
+    (0.0, 0.0)
+  } else {
+    let n = total.to_double()
+    let p = successes.to_double() / n
+    let z = 1.96
+    let z2 = z * z
+    let denominator = 1.0 + z2 / n
+    let center = (p + z2 / (2.0 * n)) / denominator
+    let margin = z *
+      (p * (1.0 - p) / n + z2 / (4.0 * n * n)).sqrt() /
+      denominator
+    let low = if center - margin < 0.0 { 0.0 } else { center - margin }
+    let high = if center + margin > 1.0 { 1.0 } else { center + margin }
+    (low, high)
+  }
+}
+
+///|
+fn protocol_fingerprint_of(run : Run) -> String {
+  let timeout = match run.timeout_steps {
+    Some(value) => value.to_string()
+    None => "unspecified"
+  }
+  "v1|task=" +
+  run.task +
+  "|protocol=" +
+  run.protocol +
+  "|observation=" +
+  run.observation_mode +
+  "|evaluator=" +
+  run.evaluator_version +
+  "|timeout=" +
+  timeout +
+  "|retry=" +
+  run.retry_policy +
+  "|success=" +
+  run.success_definition
+}
+
+///|
+fn compare_runs(first : Run, second : Run) -> String {
+  let output = StringBuilder()
+  let mut compatible = true
+  output.write_string("# RoboAudit comparison\n\n")
+  if first.observation_mode != second.observation_mode {
+    compatible = false
+    output.write_string("- RA009: observation_mode differs\n")
+  }
+  if first.evaluator_version != second.evaluator_version ||
+    first.success_definition != second.success_definition {
+    compatible = false
+    output.write_string("- RA010: evaluator or success definition differs\n")
+  }
+  if first.task != second.task ||
+    first.protocol != second.protocol ||
+    first.timeout_steps != second.timeout_steps ||
+    first.retry_policy != second.retry_policy {
+    compatible = false
+    output.write_string("- Protocol fingerprint differs\n")
+  }
+  output.write_string("- Compatible: " + compatible.to_string() + "\n")
+  output.write_string(
+    "- Fingerprint A: `" + protocol_fingerprint_of(first) + "`\n",
+  )
+  output.write_string(
+    "- Fingerprint B: `" + protocol_fingerprint_of(second) + "`\n",
+  )
+  let first_successes = success_count(first)
+  let second_successes = success_count(second)
+  let (first_low, first_high) = wilson_interval(
+    first_successes,
+    first.episodes.length(),
+  )
+  let (second_low, second_high) = wilson_interval(
+    second_successes,
+    second.episodes.length(),
+  )
+  output.write_string(
+    "- A success: " +
+    first_successes.to_string() +
+    "/" +
+    first.episodes.length().to_string() +
+    "\n",
+  )
+  output.write_string(
+    "- B success: " +
+    second_successes.to_string() +
+    "/" +
+    second.episodes.length().to_string() +
+    "\n",
+  )
+  output.write_string(
+    "- A Wilson 95% CI: [" +
+    first_low.to_string() +
+    ", " +
+    first_high.to_string() +
+    "]\n",
+  )
+  output.write_string(
+    "- B Wilson 95% CI: [" +
+    second_low.to_string() +
+    ", " +
+    second_high.to_string() +
+    "]\n",
+  )
+  if compatible && first.episodes.length() > 0 && second.episodes.length() > 0 {
+    let difference = second_successes.to_double() /
+      second.episodes.length().to_double() -
+      first_successes.to_double() / first.episodes.length().to_double()
+    output.write_string(
+      "- Absolute success-rate difference (B - A): " +
+      difference.to_string() +
+      "\n",
+    )
+  } else {
+    output.write_string(
+      "- Success-rate difference: not reported for incompatible or empty runs\n",
+    )
+  }
+  output.to_string()
+}
+
+///|
 fn markdown_report(run : Run) -> String {
   let successes = success_count(run)
   let issues = run_issues(run)
@@ -384,6 +514,36 @@ fn markdown_report(run : Run) -> String {
 }
 
 ///|
+fn json_report(run : Run) -> String {
+  let successes = success_count(run)
+  let total = run.episodes.length()
+  let rate = if total == 0 {
+    0.0
+  } else {
+    successes.to_double() / total.to_double()
+  }
+  let (wilson_low, wilson_high) = wilson_interval(successes, total)
+  let findings = run_issues(run)
+  let result : Json = {
+    "schema_version": "1.0",
+    "run_id": run.run_id,
+    "task": run.task,
+    "protocol_fingerprint": protocol_fingerprint_of(run),
+    "summary": {
+      "episode_count": total,
+      "success_count": successes,
+      "failure_count": failure_count(run),
+      "success_rate": rate,
+      "wilson_95_low": wilson_low,
+      "wilson_95_high": wilson_high,
+      "skipped_count": run.skipped_reasons.length(),
+    },
+    "audit": { "finding_count": findings.length(), "findings": findings },
+  }
+  result.stringify(indent=2)
+}
+
+///|
 /// Validate canonical JSON or RoboSyn evaluation_metrics-shaped JSON.
 pub fn validate_json(input : String) -> String {
   match parse_input(input) {
@@ -405,5 +565,33 @@ pub fn report_markdown(input : String) -> String {
   match parse_input(input) {
     Some(run) => markdown_report(run)
     None => "# RoboAudit report\n\nRA000: invalid JSON input\n"
+  }
+}
+
+///|
+/// Produce deterministic, machine-readable JSON with recomputed statistics.
+pub fn report_json(input : String) -> String {
+  match parse_input(input) {
+    Some(run) => json_report(run)
+    None =>
+      "{\n  \"schema_version\": \"1.0\",\n  \"error\": \"RA000: invalid JSON input\"\n}"
+  }
+}
+
+///|
+/// Return a stable, normalized protocol fingerprint string.
+pub fn protocol_fingerprint(input : String) -> String {
+  match parse_input(input) {
+    Some(run) => protocol_fingerprint_of(run)
+    None => "RA000: invalid JSON input"
+  }
+}
+
+///|
+/// Compare compatible runs and explain protocol mismatches before statistics.
+pub fn compare_json(first : String, second : String) -> String {
+  match (parse_input(first), parse_input(second)) {
+    (Some(first), Some(second)) => compare_runs(first, second)
+    _ => "# RoboAudit comparison\n\nRA000: invalid JSON input\n"
   }
 }

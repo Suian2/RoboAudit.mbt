@@ -7,11 +7,12 @@ The project is deliberately independent of models, videos, datasets, and simulat
 ## Current vertical slice
 
 - Parses canonical JSON and the compatible core shape of RoboSyn-style `evaluation_metrics.json`.
-- Emits deterministic Markdown with episode/success totals and failure annotations.
+- Emits deterministic Markdown and JSON with recomputed totals and Wilson 95% confidence intervals.
 - Audits duplicate seeds and episode indices, invalid success values, inconsistent counts, skipped candidates, undeclared retries, out-of-range candidates, inconsistent failure totals, action-step violations, and missing provenance (RA001–RA008, RA013–RA015 subset).
+- Compares runs using a normalized protocol fingerprint and refuses unsafe observation/evaluator comparisons with RA009/RA010.
 - Runs as a native MoonBit executable and has anonymous fixtures.
 
-P1 work still in progress: JSONL/CSV, protocol fingerprints and compare, Wilson intervals, stage funnels, manifest hashing, and the remaining rules. They are not claimed as complete.
+P1 work still in progress: JSONL/CSV, action-step distributions, stage funnels, manifest hashing, artifact validation, training/evaluation seed overlap, and 60+ tests. They are not claimed as complete.
 
 ## Quick start
 
@@ -27,7 +28,12 @@ moon run --target native cmd/main -- validate examples/minimal/audit-findings.js
 
 ```text
 roboaudit validate <file>
+roboaudit summarize <file>
+roboaudit audit <file>
 roboaudit report <file>
+roboaudit report-json <file>
+roboaudit fingerprint <file>
+roboaudit compare <file-a> <file-b>
 ```
 
 `validate` prints `valid` or stable `RAxxx` findings. `report` emits human-readable Markdown. A non-empty `skipped` list is intentionally flagged so a success rate cannot hide excluded candidates.

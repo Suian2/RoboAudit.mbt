@@ -2,6 +2,12 @@
 package "moonbit-hackathon/roboaudit"
 
 // Values
+pub fn compare_json(String, String) -> String
+
+pub fn protocol_fingerprint(String) -> String
+
+pub fn report_json(String) -> String
+
 pub fn report_markdown(String) -> String
 
 pub fn validate_json(String) -> String
