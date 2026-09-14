@@ -27,7 +27,7 @@ Generated report ordering is explicit. Hashes are computed over original file by
 
 ## Verified clean checkout
 
-On 2026-09-14, commit `185bc4f318a669a382bf11d5b176980643e82202` was cloned with `--no-hardlinks` into a new directory. With the official MoonBit toolchain and the pinned `moonbitlang/async@0.21.3` dependency resolved from the local Moon cache, the checkout passed format checking, interface generation, native checking, all 97 tests, native building, and package listing. `git diff --exit-code` and `git status --short` were clean after the full sequence. No source file or build directory from the original checkout was copied into the clone.
+On 2026-09-14, commit `9ab064b4ee2dca26c192ac7207a3d2db5ed88fce` was cloned with `--no-hardlinks` into a new directory. With the official MoonBit toolchain and the pinned `moonbitlang/async@0.21.3` dependency resolved from the local Moon cache, the checkout passed format checking, interface generation, native checking, all 100 tests, native building, the complete `hackathon/demo.ps1` run, and package listing. `git diff --exit-code` and `git status --short` were clean after the full sequence. No source file or build directory from the original checkout was copied into the clone.
 
 Generated `*.mbti` interfaces are pinned to LF in `.gitattributes`, preventing `moon info` from producing Windows `core.autocrlf`-only working-tree changes.
 
