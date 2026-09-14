@@ -16,15 +16,23 @@ jobs:
       - run: moon test --target native
       - run: moon build --target native
       - run: moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
+      - run: moon run --target native cmd/main -- report examples/minimal/canonical-clean.json --format json
       - run: moon run --target native cmd/main -- summarize examples/minimal/episodes.jsonl
       - run: moon run --target native cmd/main -- summarize examples/minimal/episodes.csv
       - run: moon run --target native cmd/main -- report-csv examples/minimal/canonical-clean.json
+      - run: moon run --target native cmd/main -- compare examples/incompatible-protocols/pure-observation.json examples/incompatible-protocols/public-pose.json
       - run: moon run --target native cmd/main -- --version
       - name: Validation findings return non-zero
         shell: pwsh
         run: |
           moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
           if ($LASTEXITCODE -ne 1) { throw "expected exit code 1, got $LASTEXITCODE" }
+          exit 0
+      - name: Invalid report format is a usage error
+        shell: pwsh
+        run: |
+          moon run --target native cmd/main -- report examples/minimal/canonical-clean.json --format yaml
+          if ($LASTEXITCODE -ne 2) { throw "expected exit code 2, got $LASTEXITCODE" }
           exit 0
       - run: moon run --target native cmd/main -- manifest examples/minimal/episodes.csv examples/minimal/episodes.jsonl
       - run: moon package --list

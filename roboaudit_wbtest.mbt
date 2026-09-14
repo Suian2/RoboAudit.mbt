@@ -660,3 +660,94 @@ test "Markdown report includes Wilson and stage summaries" {
   assert_true(report.contains("Stage funnel"))
   assert_true(report.contains("done"))
 }
+
+///|
+test "extended canonical metadata and duration are preserved" {
+  let input =
+    #|{"schema_version":"1.0","task":"t","policy":"policy-a","evaluator_version":"v","code_revision":"rev","seed_policy":"fixed","environment":"sim","provenance":"synthetic","episodes":[{"episode_index":0,"success":true,"duration_ms":42}]}
+  let run = parse_input(input).unwrap()
+  assert_eq(run.schema_version, "1.0")
+  assert_eq(run.policy, "policy-a")
+  assert_eq(run.episodes[0].duration_ms, Some(42))
+}
+
+///|
+test "protocol fingerprint changes with policy" {
+  let first =
+    #|{"task":"t","policy":"policy-a","evaluator_version":"v","episodes":[]}
+  let second =
+    #|{"task":"t","policy":"policy-b","evaluator_version":"v","episodes":[]}
+  assert_true(protocol_fingerprint(first) != protocol_fingerprint(second))
+}
+
+///|
+test "compare reports relative rate and failure category changes" {
+  let first =
+    #|{"task":"t","policy":"p","evaluator_version":"v","episodes":[{"episode_index":0,"success":true},{"episode_index":1,"success":false,"failure_type":"timeout"}]}
+  let second =
+    #|{"task":"t","policy":"p","evaluator_version":"v","episodes":[{"episode_index":0,"success":true},{"episode_index":1,"success":true}]}
+  let report = compare_json(first, second)
+  assert_true(report.contains("Relative success-rate difference"))
+  assert_true(report.contains("Failure category changes"))
+  assert_true(report.contains("\"delta\":-1"))
+}
+
+///|
+test "compare defines zero baseline relative rate" {
+  let first =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"success":false}]}
+  let second =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"success":true}]}
+  assert_true(
+    compare_json(first, second).contains("undefined (A rate is zero)"),
+  )
+}
+
+///|
+test "incompatible timeout suppresses comparison deltas" {
+  let first =
+    #|{"task":"t","evaluator_version":"v","timeout_steps":5,"episodes":[{"episode_index":0,"success":false}]}
+  let second =
+    #|{"task":"t","evaluator_version":"v","timeout_steps":6,"episodes":[{"episode_index":0,"success":true}]}
+  let report = compare_json(first, second)
+  assert_true(report.contains("Compatible: false"))
+  assert_true(!report.contains("Relative success-rate difference"))
+  assert_true(!report.contains("Failure category changes"))
+}
+
+///|
+test "failure proportions use all failed episodes as denominator" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"success":false,"failure_type":"timeout"},{"episode_index":1,"success":false}]}
+  assert_true(report_json(input).contains("\"proportion\": 0.5"))
+}
+
+///|
+test "top-level failure annotations support distribution fallback" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","failure_annotations":[{"failure_type":"timeout"}],"episodes":[{"episode_index":0,"success":false}]}
+  let report = report_json(input)
+  assert_true(!report.contains("\"rule_id\": \"RA013\""))
+  assert_true(report.contains("\"name\": \"timeout\""))
+}
+
+///|
+test "top-level failure annotation count mismatch is RA013" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","failure_annotations":["timeout","collision"],"episodes":[{"episode_index":0,"success":false}]}
+  assert_true(validate_json(input).contains("RA013"))
+}
+
+///|
+test "non-finite JSON numbers are rejected" {
+  assert_true(
+    validate_json(
+      "{\"task\":\"t\",\"episodes\":[{\"success\":true,\"action_steps\":NaN}]}",
+    ).contains("RA000"),
+  )
+  assert_true(
+    validate_json(
+      "{\"task\":\"t\",\"episodes\":[{\"success\":true,\"action_steps\":Infinity}]}",
+    ).contains("RA000"),
+  )
+}

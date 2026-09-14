@@ -1,10 +1,12 @@
 {
+  "schema_version": "1.0",
   "run_id": "anonymized-robosyn-shape",
   "config": {
     "task": "anonymized-sample-loading",
     "observation_mode": "public-pose"
   },
   "protocol": "random100",
+  "policy": "anonymized-policy-v1",
   "evaluator_version": "anonymized-evaluator-v1",
   "code_revision": "anonymized-revision",
   "seed_policy": "fixed-explicit-list",

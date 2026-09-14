@@ -1,3 +1,3 @@
-episode_index,candidate_index,episode_attempt_index,seed,success,action_steps,failure_type,task,protocol,observation_mode,evaluator_version,code_revision,seed_policy,environment,provenance
-0,0,0,301,true,6,,synthetic-csv,seeded-v1,state,fixture-v1,synthetic-fixture-revision,fixed-explicit-list,synthetic-simulator,hand-authored-synthetic-fixture
-1,1,0,302,false,10,timeout,synthetic-csv,seeded-v1,state,fixture-v1,synthetic-fixture-revision,fixed-explicit-list,synthetic-simulator,hand-authored-synthetic-fixture
+schema_version,episode_index,candidate_index,episode_attempt_index,seed,success,action_steps,duration_ms,failure_type,task,policy,protocol,observation_mode,evaluator_version,code_revision,seed_policy,environment,provenance
+1.0,0,0,0,301,true,6,30,,synthetic-csv,synthetic-policy-v1,seeded-v1,state,fixture-v1,synthetic-fixture-revision,fixed-explicit-list,synthetic-simulator,hand-authored-synthetic-fixture
+1.0,1,1,0,302,false,10,50,timeout,synthetic-csv,synthetic-policy-v1,seeded-v1,state,fixture-v1,synthetic-fixture-revision,fixed-explicit-list,synthetic-simulator,hand-authored-synthetic-fixture

@@ -49,14 +49,17 @@ pub(all) struct Episode {
   success : Bool
   success_is_valid : Bool
   action_steps : Int?
+  duration_ms : Int?
   failure_type : String?
   stages : Array[Stage]
   artifact_refs : Array[ArtifactRef]
 } derive(Eq, @debug.Debug)
 
 pub(all) struct Run {
+  schema_version : String
   run_id : String
   task : String
+  policy : String
   protocol : String
   observation_mode : String
   evaluator_version : String
@@ -72,6 +75,7 @@ pub(all) struct Run {
   retry_policy : String
   episodes : Array[Episode]
   skipped_reasons : Array[String]
+  failure_annotations : Array[String]
   training_seeds : Array[Int]
 } derive(Eq, @debug.Debug)
 

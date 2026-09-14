@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "run_id": "synthetic-skipped-and-retries",
+  "task": "synthetic-placement",
+  "policy": "synthetic-policy-v1",
+  "protocol": "candidate-filter-v1",
+  "observation_mode": "state",
+  "evaluator_version": "fixture-v1",
+  "code_revision": "synthetic-fixture-revision",
+  "seed_policy": "candidate-sequence",
+  "retry_policy": "retry-failed-feasibility-once",
+  "success_definition": "placed",
+  "environment": "synthetic-simulator",
+  "provenance": "hand-authored synthetic fixture",
+  "timeout_steps": 20,
+  "summary": { "episode_count": 2, "success_count": 1, "failure_count": 1 },
+  "episodes": [
+    { "episode_index": 0, "candidate_index": 0, "attempt_index": 0, "seed": 501, "success": true, "action_steps": 8 },
+    { "episode_index": 1, "candidate_index": 2, "attempt_index": 1, "seed": 503, "success": false, "action_steps": 20, "failure_type": "timeout" }
+  ],
+  "skipped": [
+    { "candidate_index": 1, "reason": "expert-plan-unavailable" }
+  ]
+}

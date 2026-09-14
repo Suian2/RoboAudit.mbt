@@ -5,7 +5,7 @@
 - [x] CI checks format, interface, native check/test/build, JSON/JSONL/CSV demos, manifest, and package list.
 - [x] RA001-RA015, 60+ tests, statistical reports, compare/fingerprint, JSONL/CSV, manifest/hash, benchmark, and documentation are implemented locally.
 - [x] Reproduce format/check/test/build/package from a clean local clone.
-- [ ] Finish and record the ten-task read-only reference metadata audit.
+- [x] Finish and record the accessible ten-task read-only reference metadata audit; retain an explicit ACL limitation for protected historical snapshots.
 - [ ] Set the final public repository URL in `moon.mod`.
 - [ ] Repeat `moon publish --dry-run` after Mooncakes login; the package/check phase succeeds but credentials are absent.
 - [ ] Create/push a public repository only after contributor confirmation.

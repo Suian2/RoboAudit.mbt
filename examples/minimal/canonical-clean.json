@@ -1,6 +1,8 @@
 {
+  "schema_version": "1.0",
   "run_id": "fixture-canonical-clean",
   "task": "synthetic-pick-place",
+  "policy": "synthetic-policy-v1",
   "protocol": "random-seed-evaluation-v1",
   "observation_mode": "rgbd",
   "evaluator_version": "roboaudit-fixture-v1",

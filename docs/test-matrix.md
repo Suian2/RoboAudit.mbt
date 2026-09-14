@@ -20,4 +20,4 @@ Every audit rule has an explicit triggering case and a non-triggering boundary o
 | RA014 | `successful timeout violation is RA014` | `non-negative action steps within timeout pass RA014` |
 | RA015 | `missing provenance or code revision is RA015` | `complete provenance and code revision pass RA015` |
 
-Additional tests cover malformed input, JSON escaping, Unicode, JSONL/CSV adapters, deterministic ordering, Wilson interval boundaries, grouped statistics, manifest hashing primitives, and the public library surface. The native suite currently contains 87 tests.
+Additional tests cover malformed/non-finite input, JSON escaping, Unicode, JSONL/CSV adapters, deterministic ordering, fixed JSON/Markdown golden hashes, Wilson interval boundaries, grouped statistics, failure proportions/deltas, extended canonical metadata, manifest hashing primitives, and the public library surface. The native suite currently contains 97 tests.

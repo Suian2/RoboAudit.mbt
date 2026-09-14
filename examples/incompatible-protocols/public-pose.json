@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "run_id": "synthetic-public-pose",
+  "task": "synthetic-loading",
+  "policy": "synthetic-policy-v1",
+  "protocol": "fixed-seeds-v1",
+  "observation_mode": "public-pose",
+  "evaluator_version": "fixture-v1",
+  "code_revision": "synthetic-fixture-revision",
+  "seed_policy": "fixed-explicit-list",
+  "success_definition": "object-loaded",
+  "environment": "synthetic-simulator",
+  "provenance": "hand-authored synthetic fixture",
+  "timeout_steps": 30,
+  "episodes": [
+    { "episode_index": 0, "seed": 401, "success": true, "action_steps": 12 },
+    { "episode_index": 1, "seed": 402, "success": true, "action_steps": 10 }
+  ]
+}

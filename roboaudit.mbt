@@ -32,6 +32,7 @@ pub(all) struct Episode {
   success : Bool
   success_is_valid : Bool
   action_steps : Int?
+  duration_ms : Int?
   failure_type : String?
   stages : Array[Stage]
   artifact_refs : Array[ArtifactRef]
@@ -40,8 +41,10 @@ pub(all) struct Episode {
 ///|
 /// Canonical representation shared by canonical JSON and the RoboSyn adapter.
 pub(all) struct Run {
+  schema_version : String
   run_id : String
   task : String
+  policy : String
   protocol : String
   observation_mode : String
   evaluator_version : String
@@ -57,6 +60,7 @@ pub(all) struct Run {
   retry_policy : String
   episodes : Array[Episode]
   skipped_reasons : Array[String]
+  failure_annotations : Array[String]
   training_seeds : Array[Int]
 } derive(Eq, Debug)
 
@@ -143,6 +147,7 @@ fn parse_episode(value : Json, fallback_index : Int) -> Episode {
     success,
     success_is_valid,
     action_steps: json_int(json_field(value, "action_steps")),
+    duration_ms: json_int(json_field(value, "duration_ms")),
     failure_type: json_string(json_field(value, "failure_type")),
     stages: parse_stages(json_field(value, "stages")),
     artifact_refs: parse_artifact_refs(json_field(value, "artifact_refs")),
@@ -248,14 +253,55 @@ fn parse_skipped_reasons(value : Json?) -> Array[String] {
 }
 
 ///|
+fn parse_failure_annotations(value : Json?) -> Array[String] {
+  match value {
+    Some(Array(values)) => {
+      let annotations = []
+      for value in values {
+        match value {
+          String(label) => annotations.push(label)
+          Object(_) =>
+            annotations.push(
+              string_or(
+                json_string(json_field(value, "failure_type")),
+                string_or(
+                  json_string(json_field(value, "type")),
+                  string_or(
+                    json_string(json_field(value, "reason")),
+                    "unspecified",
+                  ),
+                ),
+              ),
+            )
+          _ => ()
+        }
+      }
+      annotations
+    }
+    _ => []
+  }
+}
+
+///|
 fn parse_run(value : Json) -> Run {
   let task = string_or(
     json_string(json_field(value, "task")),
     string_or(json_string(object_field(value, "config", "task")), "unknown"),
   )
   {
+    schema_version: string_or(
+      json_string(json_field(value, "schema_version")),
+      "unspecified",
+    ),
     run_id: string_or(json_string(json_field(value, "run_id")), "anonymous-run"),
     task,
+    policy: string_or(
+      json_string(json_field(value, "policy")),
+      string_or(
+        json_string(object_field(value, "config", "policy")),
+        "unspecified",
+      ),
+    ),
     protocol: string_or(
       json_string(json_field(value, "protocol")),
       "unspecified",
@@ -318,6 +364,9 @@ fn parse_run(value : Json) -> Run {
     ),
     episodes: parse_episodes(json_field(value, "episodes")),
     skipped_reasons: parse_skipped_reasons(json_field(value, "skipped")),
+    failure_annotations: parse_failure_annotations(
+      json_field(value, "failure_annotations"),
+    ),
     training_seeds: parse_int_array(json_field(value, "training_seeds")),
   }
 }
@@ -340,8 +389,10 @@ fn parse_json_input(input : String) -> Run? {
 ///|
 fn run_with_episodes(template : Run, episodes : Array[Episode]) -> Run {
   {
+    schema_version: template.schema_version,
     run_id: template.run_id,
     task: template.task,
+    policy: template.policy,
     protocol: template.protocol,
     observation_mode: template.observation_mode,
     evaluator_version: template.evaluator_version,
@@ -357,6 +408,7 @@ fn run_with_episodes(template : Run, episodes : Array[Episode]) -> Run {
     retry_policy: template.retry_policy,
     episodes,
     skipped_reasons: template.skipped_reasons,
+    failure_annotations: template.failure_annotations,
     training_seeds: template.training_seeds,
   }
 }
@@ -457,7 +509,9 @@ fn parse_csv_input(input : String) -> Run? {
   let headers : Array[String] = []
   let episodes : Array[Episode] = []
   let mut saw_header = false
+  let mut schema_version = "unspecified"
   let mut task = "unknown"
+  let mut policy = "unspecified"
   let mut evaluator_version = "unspecified"
   let mut code_revision = "unspecified"
   let mut seed_policy = "unspecified"
@@ -494,12 +548,18 @@ fn parse_csv_input(input : String) -> Run? {
           success,
           success_is_valid,
           action_steps: csv_int(headers, cells, "action_steps"),
+          duration_ms: csv_int(headers, cells, "duration_ms"),
           failure_type: csv_value(headers, cells, "failure_type"),
           stages: [],
           artifact_refs: [],
         })
         if episodes.length() == 1 {
+          schema_version = string_or(
+            csv_value(headers, cells, "schema_version"),
+            schema_version,
+          )
           task = string_or(csv_value(headers, cells, "task"), task)
+          policy = string_or(csv_value(headers, cells, "policy"), policy)
           evaluator_version = string_or(
             csv_value(headers, cells, "evaluator_version"),
             evaluator_version,
@@ -533,8 +593,10 @@ fn parse_csv_input(input : String) -> Run? {
     None
   } else {
     Some({
+      schema_version,
       run_id: "csv-run",
       task,
+      policy,
       protocol,
       observation_mode,
       evaluator_version,
@@ -550,6 +612,7 @@ fn parse_csv_input(input : String) -> Run? {
       retry_policy: "unspecified",
       episodes,
       skipped_reasons: [],
+      failure_annotations: [],
       training_seeds: [],
     })
   }
@@ -596,15 +659,17 @@ fn run_issues(run : Run) -> Array[String] {
       }
     None => ()
   }
+  let failures = failure_count(run)
+  let annotations = annotated_failure_count(run)
+  let mut failure_mismatch = annotations > 0 && annotations != failures
   match run.declared_failure_count {
-    Some(declared) =>
-      if declared != failure_count(run) ||
-        annotated_failure_count(run) > failure_count(run) {
-        add_issue(
-          issues, "RA013", "declared or annotated failures differ from failed episodes",
-        )
-      }
+    Some(declared) => if declared != failures { failure_mismatch = true }
     None => ()
+  }
+  if failure_mismatch {
+    add_issue(
+      issues, "RA013", "declared or annotated failures differ from failed episodes",
+    )
   }
   if !run.skipped_reasons.is_empty() {
     add_issue(issues, "RA006", "skipped candidates require disclosure")
@@ -793,6 +858,9 @@ fn failure_count(run : Run) -> Int {
 
 ///|
 fn annotated_failure_count(run : Run) -> Int {
+  if !run.failure_annotations.is_empty() {
+    return run.failure_annotations.length()
+  }
   let mut count = 0
   for episode in run.episodes {
     if episode.failure_type is Some(_) {
@@ -884,10 +952,23 @@ fn increment_label(
 }
 
 ///|
-fn distribution_json(labels : Array[String], counts : Array[Int]) -> Json {
+fn distribution_json(
+  labels : Array[String],
+  counts : Array[Int],
+  denominator : Int,
+) -> Json {
   let entries : Array[Json] = []
   for index, label in labels {
-    entries.push({ "name": label, "count": counts[index] })
+    let proportion = if denominator == 0 {
+      0.0
+    } else {
+      counts[index].to_double() / denominator.to_double()
+    }
+    entries.push({
+      "name": label,
+      "count": counts[index],
+      "proportion": proportion,
+    })
   }
   Json::array(entries)
 }
@@ -902,7 +983,12 @@ fn failure_distribution_json(run : Run) -> Json {
       None => ()
     }
   }
-  distribution_json(labels, counts)
+  if labels.is_empty() {
+    for label in run.failure_annotations {
+      increment_label(labels, counts, label)
+    }
+  }
+  distribution_json(labels, counts, failure_count(run))
 }
 
 ///|
@@ -912,7 +998,7 @@ fn skipped_distribution_json(run : Run) -> Json {
   for reason in run.skipped_reasons {
     increment_label(labels, counts, reason)
   }
-  distribution_json(labels, counts)
+  distribution_json(labels, counts, run.skipped_reasons.length())
 }
 
 ///|
@@ -1003,6 +1089,8 @@ fn protocol_signature_of(run : Run) -> String {
   }
   "v1|task=" +
   run.task +
+  "|policy=" +
+  run.policy +
   "|protocol=" +
   run.protocol +
   "|observation=" +
@@ -1041,6 +1129,7 @@ fn compare_runs(first : Run, second : Run) -> String {
     output.write_string("- RA010: evaluator or success definition differs\n")
   }
   if first.task != second.task ||
+    first.policy != second.policy ||
     first.protocol != second.protocol ||
     first.seed_policy != second.seed_policy ||
     first.environment != second.environment ||
@@ -1095,13 +1184,31 @@ fn compare_runs(first : Run, second : Run) -> String {
     "]\n",
   )
   if compatible && first.episodes.length() > 0 && second.episodes.length() > 0 {
-    let difference = second_successes.to_double() /
-      second.episodes.length().to_double() -
-      first_successes.to_double() / first.episodes.length().to_double()
+    let first_rate = first_successes.to_double() /
+      first.episodes.length().to_double()
+    let second_rate = second_successes.to_double() /
+      second.episodes.length().to_double()
+    let difference = second_rate - first_rate
     output.write_string(
       "- Absolute success-rate difference (B - A): " +
       difference.to_string() +
       "\n",
+    )
+    if first_rate == 0.0 {
+      output.write_string(
+        "- Relative success-rate difference: undefined (A rate is zero)\n",
+      )
+    } else {
+      output.write_string(
+        "- Relative success-rate difference ((B - A) / A): " +
+        (difference / first_rate).to_string() +
+        "\n",
+      )
+    }
+    output.write_string(
+      "- Failure category changes: `" +
+      failure_changes_json(first, second).stringify() +
+      "`\n",
     )
   } else {
     output.write_string(
@@ -1109,6 +1216,63 @@ fn compare_runs(first : Run, second : Run) -> String {
     )
   }
   output.to_string()
+}
+
+///|
+fn collect_failure_labels(
+  run : Run,
+  labels : Array[String],
+  counts : Array[Int],
+) -> Unit {
+  for episode in run.episodes {
+    match episode.failure_type {
+      Some(label) => increment_label(labels, counts, label)
+      None => ()
+    }
+  }
+  if counts.is_empty() {
+    for label in run.failure_annotations {
+      increment_label(labels, counts, label)
+    }
+  }
+}
+
+///|
+fn failure_changes_json(first : Run, second : Run) -> Json {
+  let labels : Array[String] = []
+  let first_counts : Array[Int] = []
+  collect_failure_labels(first, labels, first_counts)
+  let second_labels : Array[String] = []
+  let second_counts : Array[Int] = []
+  collect_failure_labels(second, second_labels, second_counts)
+  for label in second_labels {
+    let mut present = false
+    for existing in labels {
+      if existing == label {
+        present = true
+      }
+    }
+    if !present {
+      labels.push(label)
+      first_counts.push(0)
+    }
+  }
+  let changes : Array[Json] = []
+  for index, label in labels {
+    let mut second_count = 0
+    for second_index, second_label in second_labels {
+      if label == second_label {
+        second_count = second_counts[second_index]
+      }
+    }
+    changes.push({
+      "name": label,
+      "count_a": first_counts[index],
+      "count_b": second_count,
+      "delta": second_count - first_counts[index],
+    })
+  }
+  Json::array(changes)
 }
 
 ///|
@@ -1123,6 +1287,7 @@ fn markdown_report(run : Run) -> String {
   output.write_string("# RoboAudit report\n\n")
   output.write_string("- Run: `" + run.run_id + "`\n")
   output.write_string("- Task: `" + run.task + "`\n")
+  output.write_string("- Policy: `" + run.policy + "`\n")
   output.write_string("- Protocol: `" + run.protocol + "`\n")
   output.write_string("- Observation mode: `" + run.observation_mode + "`\n")
   output.write_string("- Evaluator: `" + run.evaluator_version + "`\n")
@@ -1229,8 +1394,10 @@ fn json_report(run : Run) -> String {
   let failure_steps = action_step_stats(run, 2)
   let result : Json = {
     "schema_version": "1.0",
+    "input_schema_version": run.schema_version,
     "run_id": run.run_id,
     "task": run.task,
+    "policy": run.policy,
     "evaluator_version": run.evaluator_version,
     "code_revision": run.code_revision,
     "seed_policy": run.seed_policy,
