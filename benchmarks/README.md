@@ -10,7 +10,7 @@ Measured on 2026-09-14 with MoonBit 0.1.20260904 on the local Windows native too
 
 | Workload | Mean | Standard deviation | Runs |
 | --- | ---: | ---: | ---: |
-| Validate synthetic 1,000-episode JSON | 2.46 ms | 125.79 us | 10 x 39 |
-| Generate JSON report for 1,000 episodes | 3.05 ms | 250.48 us | 10 x 36 |
+| Validate synthetic 1,000-episode JSON | 3.23 ms | 424.61 us | 10 x 31 |
+| Generate JSON report for 1,000 episodes | 3.49 ms | 502.97 us | 10 x 31 |
 
-These are observed development-machine results, not universal performance claims. Source workload generation is in `roboaudit_bench_test.mbt`; it contains no external or private data.
+These are the latest observed development-machine results, not universal performance claims. Source workload generation is in `roboaudit_bench_test.mbt`; it contains no external or private data. Earlier runs are preserved in the worklog rather than silently replacing their historical evidence.

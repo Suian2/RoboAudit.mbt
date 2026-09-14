@@ -1,7 +1,7 @@
 ///|
 test "public validate accepts a supported clean run" {
   let input =
-    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"seed":1,"success":true}]}
+    #|{"task":"t","evaluator_version":"v","code_revision":"rev","provenance":"synthetic-test","episodes":[{"episode_index":0,"seed":1,"success":true}]}
   assert_eq(@roboaudit.validate_json(input), "valid")
 }
 

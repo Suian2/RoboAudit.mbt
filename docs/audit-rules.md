@@ -16,6 +16,6 @@
 | RA012 | Artifact is missing, unverifiable, or hash-mismatched |
 | RA013 | Declared/annotated failures contradict failed episodes |
 | RA014 | Negative action steps or successful timeout violation |
-| RA015 | Missing task/evaluator provenance |
+| RA015 | Missing provenance or code revision |
 
 Findings have stable `rule_id`, `severity`, `path`, `message`, and `suggestion` fields in JSON reports. RA012 consumes explicit `exists`, expected `sha256`, and `observed_sha256` evidence in canonical episode artifact references. The CLI `verify-file` command computes observed hashes directly from original file bytes.

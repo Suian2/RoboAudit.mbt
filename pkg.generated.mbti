@@ -60,7 +60,11 @@ pub(all) struct Run {
   protocol : String
   observation_mode : String
   evaluator_version : String
+  code_revision : String
+  seed_policy : String
   success_definition : String
+  environment : String
+  provenance : String
   timeout_steps : Int?
   declared_episode_count : Int?
   declared_success_count : Int?

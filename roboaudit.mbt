@@ -45,7 +45,11 @@ pub(all) struct Run {
   protocol : String
   observation_mode : String
   evaluator_version : String
+  code_revision : String
+  seed_policy : String
   success_definition : String
+  environment : String
+  provenance : String
   timeout_steps : Int?
   declared_episode_count : Int?
   declared_success_count : Int?
@@ -267,9 +271,31 @@ fn parse_run(value : Json) -> Run {
       json_string(json_field(value, "evaluator_version")),
       "unspecified",
     ),
+    code_revision: string_or(
+      json_string(json_field(value, "code_revision")),
+      string_or(
+        json_string(object_field(value, "config", "code_revision")),
+        string_or(json_string(json_field(value, "git_commit")), "unspecified"),
+      ),
+    ),
+    seed_policy: string_or(
+      json_string(json_field(value, "seed_policy")),
+      string_or(
+        json_string(object_field(value, "config", "seed_policy")),
+        "unspecified",
+      ),
+    ),
     success_definition: string_or(
       json_string(json_field(value, "success_definition")),
       "unspecified",
+    ),
+    environment: string_or(
+      json_string(json_field(value, "environment")),
+      "unspecified",
+    ),
+    provenance: string_or(
+      json_string(json_field(value, "provenance")),
+      string_or(json_string(json_field(value, "source")), "unspecified"),
     ),
     timeout_steps: match json_int(json_field(value, "timeout_steps")) {
       Some(value) => Some(value)
@@ -319,7 +345,11 @@ fn run_with_episodes(template : Run, episodes : Array[Episode]) -> Run {
     protocol: template.protocol,
     observation_mode: template.observation_mode,
     evaluator_version: template.evaluator_version,
+    code_revision: template.code_revision,
+    seed_policy: template.seed_policy,
     success_definition: template.success_definition,
+    environment: template.environment,
+    provenance: template.provenance,
     timeout_steps: template.timeout_steps,
     declared_episode_count: template.declared_episode_count,
     declared_success_count: template.declared_success_count,
@@ -429,8 +459,12 @@ fn parse_csv_input(input : String) -> Run? {
   let mut saw_header = false
   let mut task = "unknown"
   let mut evaluator_version = "unspecified"
+  let mut code_revision = "unspecified"
+  let mut seed_policy = "unspecified"
   let mut protocol = "unspecified"
   let mut observation_mode = "unspecified"
+  let mut environment = "unspecified"
+  let mut provenance = "unspecified"
   for raw_line in input.split("\n") {
     let line = raw_line.trim()
     if !line.is_empty() {
@@ -470,10 +504,26 @@ fn parse_csv_input(input : String) -> Run? {
             csv_value(headers, cells, "evaluator_version"),
             evaluator_version,
           )
+          code_revision = string_or(
+            csv_value(headers, cells, "code_revision"),
+            code_revision,
+          )
+          seed_policy = string_or(
+            csv_value(headers, cells, "seed_policy"),
+            seed_policy,
+          )
           protocol = string_or(csv_value(headers, cells, "protocol"), protocol)
           observation_mode = string_or(
             csv_value(headers, cells, "observation_mode"),
             observation_mode,
+          )
+          environment = string_or(
+            csv_value(headers, cells, "environment"),
+            environment,
+          )
+          provenance = string_or(
+            csv_value(headers, cells, "provenance"),
+            provenance,
           )
         }
       }
@@ -488,7 +538,11 @@ fn parse_csv_input(input : String) -> Run? {
       protocol,
       observation_mode,
       evaluator_version,
+      code_revision,
+      seed_policy,
       success_definition: "unspecified",
+      environment,
+      provenance,
       timeout_steps: None,
       declared_episode_count: None,
       declared_success_count: None,
@@ -521,8 +575,8 @@ fn add_issue(issues : Array[String], rule : String, message : String) -> Unit {
 ///|
 fn run_issues(run : Run) -> Array[String] {
   let issues = []
-  if run.task == "unknown" || run.evaluator_version == "unspecified" {
-    add_issue(issues, "RA015", "missing task or evaluator provenance")
+  if run.provenance == "unspecified" || run.code_revision == "unspecified" {
+    add_issue(issues, "RA015", "missing provenance or code revision")
   }
   match run.declared_episode_count {
     Some(declared) =>
@@ -669,14 +723,56 @@ fn audit_findings(run : Run) -> Array[AuditFinding] {
           } else {
             "error"
           },
-          path: "/",
+          path: finding_path(rule_id),
           message: message.to_owned(),
-          suggestion: "Review the source episode log and declared evaluation protocol.",
+          suggestion: finding_suggestion(rule_id),
         })
       None => ()
     }
   }
   findings
+}
+
+///|
+fn finding_path(rule_id : StringView) -> String {
+  match rule_id {
+    "RA001" => "/episodes/*/seed"
+    "RA002" => "/episodes/*/episode_index"
+    "RA003" => "/episodes/*/success"
+    "RA004" => "/summary/success_count"
+    "RA005" => "/summary/episode_count"
+    "RA006" => "/skipped"
+    "RA007" => "/retry_policy"
+    "RA008" => "/episodes/*/candidate_index"
+    "RA011" => "/training_seeds"
+    "RA012" => "/episodes/*/artifact_refs"
+    "RA013" => "/summary/failure_count"
+    "RA014" => "/episodes/*/action_steps"
+    "RA015" => "/provenance"
+    _ => "/"
+  }
+}
+
+///|
+fn finding_suggestion(rule_id : StringView) -> String {
+  match rule_id {
+    "RA001" => "Use one disclosed evaluation seed per episode."
+    "RA002" => "Provide unique episode_index values for every episode."
+    "RA003" => "Encode success as a JSON or CSV boolean."
+    "RA004" => "Recompute summary.success_count from episodes."
+    "RA005" => "Set summary.episode_count to the parsed episode count."
+    "RA006" =>
+      "Disclose skipped candidates and interpret the denominator explicitly."
+    "RA007" => "Declare the retry policy whenever later attempts are present."
+    "RA008" =>
+      "Keep candidate indices within the disclosed candidate population."
+    "RA011" => "Use disjoint training and evaluation seed sets."
+    "RA012" => "Provide existing artifacts with matching SHA-256 evidence."
+    "RA013" => "Align failure counts and annotations with failed episodes."
+    "RA014" => "Keep action steps non-negative and within the success timeout."
+    "RA015" => "Record both provenance and the evaluated code revision."
+    _ => "Review the source episode log and declared evaluation protocol."
+  }
 }
 
 ///|
@@ -913,6 +1009,10 @@ fn protocol_signature_of(run : Run) -> String {
   run.observation_mode +
   "|evaluator=" +
   run.evaluator_version +
+  "|seed_policy=" +
+  run.seed_policy +
+  "|environment=" +
+  run.environment +
   "|timeout=" +
   timeout +
   "|retry=" +
@@ -942,6 +1042,8 @@ fn compare_runs(first : Run, second : Run) -> String {
   }
   if first.task != second.task ||
     first.protocol != second.protocol ||
+    first.seed_policy != second.seed_policy ||
+    first.environment != second.environment ||
     first.timeout_steps != second.timeout_steps ||
     first.retry_policy != second.retry_policy {
     compatible = false
@@ -1023,6 +1125,9 @@ fn markdown_report(run : Run) -> String {
   output.write_string("- Task: `" + run.task + "`\n")
   output.write_string("- Protocol: `" + run.protocol + "`\n")
   output.write_string("- Observation mode: `" + run.observation_mode + "`\n")
+  output.write_string("- Evaluator: `" + run.evaluator_version + "`\n")
+  output.write_string("- Code revision: `" + run.code_revision + "`\n")
+  output.write_string("- Provenance: `" + run.provenance + "`\n")
   output.write_string("- Episodes: " + run.episodes.length().to_string() + "\n")
   output.write_string(
     "- Success: " +
@@ -1126,6 +1231,11 @@ fn json_report(run : Run) -> String {
     "schema_version": "1.0",
     "run_id": run.run_id,
     "task": run.task,
+    "evaluator_version": run.evaluator_version,
+    "code_revision": run.code_revision,
+    "seed_policy": run.seed_policy,
+    "environment": run.environment,
+    "provenance": run.provenance,
     "protocol_fingerprint": protocol_fingerprint_of(run),
     "summary": {
       "episode_count": total,
@@ -1173,10 +1283,14 @@ fn csv_report(run : Run) -> String {
   } else {
     (successes.to_double() / total.to_double()).to_string()
   }
-  "run_id,task,protocol_fingerprint,episode_count,success_count,failure_count,success_rate,skipped_count,finding_count\n" +
+  "run_id,task,code_revision,provenance,protocol_fingerprint,episode_count,success_count,failure_count,success_rate,skipped_count,finding_count\n" +
   csv_escape(run.run_id) +
   "," +
   csv_escape(run.task) +
+  "," +
+  csv_escape(run.code_revision) +
+  "," +
+  csv_escape(run.provenance) +
   "," +
   csv_escape(protocol_fingerprint_of(run)) +
   "," +

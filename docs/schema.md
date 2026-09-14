@@ -1,6 +1,6 @@
 # Canonical schema (current slice)
 
-`Run` normalizes `run_id`, `task`, `protocol`, `observation_mode`, `evaluator_version`, `success_definition`, `timeout_steps`, `retry_policy`, declared summary values, `episodes`, `skipped`, and `training_seeds`.
+`Run` normalizes `run_id`, `task`, `protocol`, `observation_mode`, `evaluator_version`, `code_revision`, `seed_policy`, `success_definition`, `environment`, `provenance`, `timeout_steps`, `retry_policy`, declared summary values, `episodes`, `skipped`, and `training_seeds`.
 
 Each `Episode` normalizes `episode_index`, optional `candidate_index`, optional `attempt_index`, optional `seed`, `success`, optional `action_steps`, optional `failure_type`, `stages`, and `artifact_refs`. `Stage`, `ArtifactRef`, `Episode`, `Run`, and `AuditFinding` are public MoonBit model types.
 

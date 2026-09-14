@@ -19,5 +19,12 @@ jobs:
       - run: moon run --target native cmd/main -- summarize examples/minimal/episodes.jsonl
       - run: moon run --target native cmd/main -- summarize examples/minimal/episodes.csv
       - run: moon run --target native cmd/main -- report-csv examples/minimal/canonical-clean.json
+      - run: moon run --target native cmd/main -- --version
+      - name: Validation findings return non-zero
+        shell: pwsh
+        run: |
+          moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
+          if ($LASTEXITCODE -ne 1) { throw "expected exit code 1, got $LASTEXITCODE" }
+          exit 0
       - run: moon run --target native cmd/main -- manifest examples/minimal/episodes.csv examples/minimal/episodes.jsonl
       - run: moon package --list

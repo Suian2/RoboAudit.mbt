@@ -4,6 +4,10 @@
   "protocol": "random-seed-evaluation-v1",
   "observation_mode": "rgbd",
   "evaluator_version": "roboaudit-fixture-v1",
+  "code_revision": "synthetic-fixture-revision",
+  "seed_policy": "fixed-explicit-list",
+  "environment": "synthetic-simulator",
+  "provenance": "hand-authored synthetic fixture",
   "timeout_steps": 30,
   "summary": { "episodes": 3 },
   "episodes": [

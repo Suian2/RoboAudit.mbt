@@ -6,6 +6,10 @@
   },
   "protocol": "random100",
   "evaluator_version": "anonymized-evaluator-v1",
+  "code_revision": "anonymized-revision",
+  "seed_policy": "fixed-explicit-list",
+  "environment": "anonymized-simulator",
+  "provenance": "synthetic anonymized-shape fixture",
   "summary": { "episode_count": 2, "success_count": 1 },
   "episodes": [
     { "episode_index": 0, "candidate_index": 0, "episode_attempt_index": 0, "seed": 501, "success": true, "action_steps": 18 },

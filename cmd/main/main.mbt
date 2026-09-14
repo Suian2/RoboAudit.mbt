@@ -1,10 +1,21 @@
 ///|
 /// Native command-line entry point. Core parsing and reporting remain in the
 /// library package so they can be reused by future adapters and WASM tooling.
+extern "c" fn process_exit(code : Int) = "exit"
+
+///|
+fn print_usage() -> Unit {
+  println(
+    "usage: roboaudit <validate|summarize|audit|report|report-json|report-csv|fingerprint> <file> | compare <file-a> <file-b> | manifest <paths...> | verify-file <path> <sha256>",
+  )
+}
+
+///|
 async fn main {
   let matches = @argparse.Command(
     "roboaudit",
     about="Audit robot and embodied-AI evaluation logs.",
+    version="0.1.0",
     positionals=[
       PositionArg(
         "args",
@@ -26,6 +37,7 @@ async fn main {
           ", observed=" +
           observed,
         )
+        process_exit(1)
       }
     }
     { "args": ["manifest", .. paths], .. } => {
@@ -54,17 +66,29 @@ async fn main {
     { "args": [command, path], .. } => {
       let input = @fs.read_file(path).text()
       match command {
-        "validate" => println(@lib.validate_json(input))
-        "audit" => println(@lib.validate_json(input))
+        "validate" => {
+          let output = @lib.validate_json(input)
+          println(output)
+          if output != "valid" {
+            process_exit(1)
+          }
+        }
+        "audit" => {
+          let output = @lib.validate_json(input)
+          println(output)
+          if output != "valid" {
+            process_exit(1)
+          }
+        }
         "summarize" => println(@lib.report_json(input))
         "report" => println(@lib.report_markdown(input))
         "report-json" => println(@lib.report_json(input))
         "report-csv" => println(@lib.report_csv(input))
         "fingerprint" => println(@lib.protocol_fingerprint(input))
-        _ =>
-          println(
-            "usage: roboaudit <validate|summarize|audit|report|report-json|report-csv|fingerprint> <file> | compare <file-a> <file-b> | manifest <paths...> | verify-file <path> <sha256>",
-          )
+        _ => {
+          print_usage()
+          process_exit(2)
+        }
       }
     }
     { "args": ["compare", first_path, second_path], .. } => {
@@ -72,9 +96,9 @@ async fn main {
       let second = @fs.read_file(second_path).text()
       println(@lib.compare_json(first, second))
     }
-    _ =>
-      println(
-        "usage: roboaudit <validate|summarize|audit|report|report-json|report-csv|fingerprint> <file> | compare <file-a> <file-b> | manifest <paths...> | verify-file <path> <sha256>",
-      )
+    _ => {
+      print_usage()
+      process_exit(2)
+    }
   }
 }

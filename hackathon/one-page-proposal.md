@@ -22,4 +22,4 @@ The tool learns field conventions and audit needs from a read-only reference pro
 
 ## Delivery status
 
-The local candidate includes JSON/JSONL/CSV adapters, RA001-RA015, deterministic reports, Wilson and grouped statistics, safe comparison, SHA-256 manifests, 77 tests, native benchmarks, CI, documentation, and reproduction steps. The ten-task metadata audit and clean-directory reproduction remain before external submission; public push, Mooncakes publication, registration, and final submission require contributor confirmation.
+The local candidate includes JSON/JSONL/CSV adapters, RA001-RA015, deterministic reports, Wilson and grouped statistics, safe comparison, SHA-256 manifests, 87 tests with a per-rule positive/negative matrix, native benchmarks, CI, documentation, and a verified clean-checkout reproduction. The ten-task metadata audit remains before external submission; public push, Mooncakes publication, registration, and final submission require contributor confirmation.

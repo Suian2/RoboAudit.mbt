@@ -6,6 +6,8 @@ test "canonical parser and deterministic report" {
     #|  "task": "synthetic-pick",
     #|  "protocol": "random100",
     #|  "evaluator_version": "v1",
+    #|  "code_revision": "fixture-revision",
+    #|  "provenance": "synthetic-test",
     #|  "summary": { "episodes": 2 },
     #|  "episodes": [
     #|    { "episode_index": 0, "seed": 11, "success": true, "action_steps": 10 },
@@ -35,6 +37,34 @@ test "audit detects duplicate seed and skipped candidate" {
 }
 
 ///|
+test "unique seeds pass RA001" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"seed":1,"success":true},{"episode_index":1,"seed":2,"success":false}]}
+  assert_true(!validate_json(input).contains("RA001"))
+}
+
+///|
+test "present unique episode indices pass RA002" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"success":true},{"episode_index":1,"success":false}]}
+  assert_true(!validate_json(input).contains("RA002"))
+}
+
+///|
+test "boolean success values pass RA003" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[{"episode_index":0,"success":true},{"episode_index":1,"success":false}]}
+  assert_true(!validate_json(input).contains("RA003"))
+}
+
+///|
+test "absent skipped candidates pass RA006" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","episodes":[]}
+  assert_true(!validate_json(input).contains("RA006"))
+}
+
+///|
 test "audit recomputes summary and retry fields" {
   let input =
     #|{
@@ -50,6 +80,13 @@ test "audit recomputes summary and retry fields" {
   assert_true(findings.contains("RA007"))
   assert_true(findings.contains("RA008"))
   assert_true(findings.contains("RA013"))
+}
+
+///|
+test "declared episode count mismatch is RA005" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","summary":{"episode_count":2},"episodes":[{"episode_index":0,"success":true}]}
+  assert_true(validate_json(input).contains("RA005"))
 }
 
 ///|
@@ -107,6 +144,15 @@ test "protocol fingerprint changes with observation mode" {
     #|{"task":"t","protocol":"p","observation_mode":"rgb","evaluator_version":"v","episodes":[]}
   let second =
     #|{"task":"t","protocol":"p","observation_mode":"state","evaluator_version":"v","episodes":[]}
+  assert_true(protocol_fingerprint(first) != protocol_fingerprint(second))
+}
+
+///|
+test "protocol fingerprint changes with seed policy" {
+  let first =
+    #|{"task":"t","protocol":"p","observation_mode":"rgb","evaluator_version":"v","seed_policy":"fixed-list","episodes":[]}
+  let second =
+    #|{"task":"t","protocol":"p","observation_mode":"rgb","evaluator_version":"v","seed_policy":"random","episodes":[]}
   assert_true(protocol_fingerprint(first) != protocol_fingerprint(second))
 }
 
@@ -193,6 +239,13 @@ test "successful timeout violation is RA014" {
   let input =
     #|{"task":"t","evaluator_version":"v","timeout_steps":5,"episodes":[{"episode_index":0,"seed":1,"success":true,"action_steps":6}]}
   assert_true(validate_json(input).contains("RA014"))
+}
+
+///|
+test "non-negative action steps within timeout pass RA014" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","timeout_steps":5,"episodes":[{"episode_index":0,"seed":1,"success":true,"action_steps":5}]}
+  assert_true(!validate_json(input).contains("RA014"))
 }
 
 ///|
@@ -429,7 +482,8 @@ test "JSON audit emits structured finding objects" {
   let report = report_json(input)
   assert_true(report.contains("\"rule_id\": \"RA003\""))
   assert_true(report.contains("\"severity\": \"error\""))
-  assert_true(report.contains("\"path\": \"/\""))
+  assert_true(report.contains("\"path\": \"/episodes/*/success\""))
+  assert_true(report.contains("Encode success as a JSON or CSV boolean."))
 }
 
 ///|
@@ -548,11 +602,40 @@ test "matching artifact hash accepts hexadecimal case" {
 }
 
 ///|
+test "missing provenance or code revision is RA015" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","code_revision":"rev","episodes":[]}
+  assert_true(validate_json(input).contains("RA015"))
+}
+
+///|
+test "complete provenance and code revision pass RA015" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","code_revision":"rev","provenance":"synthetic","episodes":[]}
+  assert_true(!validate_json(input).contains("RA015"))
+}
+
+///|
+test "provenance fields are preserved in JSON report" {
+  let input =
+    #|{"task":"t","evaluator_version":"v","code_revision":"rev-123","seed_policy":"fixed","environment":"sim","provenance":"generated","episodes":[]}
+  let report = report_json(input)
+  assert_true(report.contains("\"code_revision\": \"rev-123\""))
+  assert_true(report.contains("\"seed_policy\": \"fixed\""))
+  assert_true(report.contains("\"environment\": \"sim\""))
+  assert_true(report.contains("\"provenance\": \"generated\""))
+}
+
+///|
 test "CSV report has deterministic summary columns" {
   let input =
     #|{"run_id":"r","task":"t","evaluator_version":"v","episodes":[{"success":true}]}
   let report = report_csv(input)
-  assert_true(report.has_prefix("run_id,task,protocol_fingerprint"))
+  assert_true(
+    report.has_prefix(
+      "run_id,task,code_revision,provenance,protocol_fingerprint",
+    ),
+  )
   assert_true(report.contains(",1,1,0,1,"))
 }
 
