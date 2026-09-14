@@ -1,13 +1,42 @@
 # RoboAudit.mbt
 
-RoboAudit.mbt 是一个以 MoonBit 为主体实现的原生命令行工具，用于审计机器人与具身智能评测日志。它将 episode 日志转为可追溯证据：重算成功数、输出审计发现，并生成确定性 Markdown 报告。
+RoboAudit.mbt 是一个以 MoonBit 为主体实现的原生命令行工具，用于把机器人和具身智能 episode 日志转为可审计、可复现的评测证据。
 
-当前已实现 canonical JSON 与兼容的 RoboSyn `evaluation_metrics.json` 核心字段解析、`validate`/`summarize`/`audit`/`compare`/`report` 命令、确定性 JSON/Markdown、协议指纹、Wilson 95% 区间、匿名 fixture，以及 RA001–RA010、RA013–RA015 的可执行检查。JSONL/CSV、动作步分布、阶段漏斗、hash manifest、RA011/RA012 和 60+ 测试仍在开发中，未被宣称完成。
+## 功能
+
+- 支持 canonical JSON、JSONL episode 流、简单无引号 CSV，以及 RoboSyn 风格 `evaluation_metrics.json` 的真实字段别名。
+- 生成确定性的 Markdown、JSON 和 CSV 报告。
+- 重算成功数与成功率，计算 Wilson 95% 置信区间、动作步分组、失败类型、阶段漏斗和跳过原因。
+- 实现 RA001 至 RA015，包括重试披露、协议不兼容、训练/评测种子重叠和 artifact 校验。
+- 使用纯 MoonBit、二进制安全的 SHA-256 生成协议指纹、排序 manifest，并直接校验文件。
+- 包含 77 项自动测试、native release benchmark、CI，以及合成/匿名 fixture。
+
+CSV 输入有意限定为简单无引号字段；值含逗号或换行时请使用 JSON/JSONL。仓库不包含模型、视频、原始数据集、仿真资产、凭据或许可不明内容。
+
+## 快速开始
 
 ```powershell
+moon fmt --check
+moon info
 moon check --target native
 moon test --target native
+moon build --target native
 moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
 ```
 
-仓库不包含模型、视频、原始数据集、仿真资产、密钥或机器内部路径。数据边界见 [docs/provenance.md](docs/provenance.md)。
+## 命令
+
+```text
+roboaudit validate <file>
+roboaudit summarize <file>
+roboaudit audit <file>
+roboaudit compare <file-a> <file-b>
+roboaudit report <file>
+roboaudit report-json <file>
+roboaudit report-csv <file>
+roboaudit fingerprint <file>
+roboaudit manifest <paths...>
+roboaudit verify-file <path> <sha256>
+```
+
+复现流程见 [docs/reproducibility.md](docs/reproducibility.md)，数据与许可边界见 [docs/provenance.md](docs/provenance.md)。项目采用 Apache-2.0 许可证。

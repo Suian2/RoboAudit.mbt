@@ -1,27 +1,27 @@
 # RoboAudit.mbt
 
-RoboAudit.mbt is a MoonBit-first native CLI for checking robot and embodied-AI evaluation logs. It turns an episode list into reproducible evidence: recalculated success counts, audit findings, and deterministic Markdown.
+RoboAudit.mbt is a MoonBit-first native CLI for turning robot and embodied-AI episode logs into auditable, reproducible evaluation evidence.
 
-The project is deliberately independent of models, videos, datasets, and simulator assets. Fixtures are synthetic or anonymized, minimal examples.
+## Features
 
-## Current vertical slice
+- Canonical JSON, JSONL episode streams, simple unquoted CSV, and RoboSyn-style `evaluation_metrics.json` aliases.
+- Deterministic Markdown, JSON, and CSV reports.
+- Recomputed success counts and rates, Wilson 95% confidence intervals, action-step groups, failure types, stage funnels, and skipped reasons.
+- RA001 through RA015 audit rules, including retry disclosure, protocol mismatches, seed overlap, and artifact verification evidence.
+- SHA-256 protocol fingerprints, sorted file manifests, and direct file verification using a binary-safe pure MoonBit implementation.
+- 77 automated tests, native release benchmarks, CI, and synthetic/anonymized fixtures.
 
-- Parses canonical JSON and the compatible core shape of RoboSyn-style `evaluation_metrics.json`.
-- Emits deterministic Markdown and JSON with recomputed totals and Wilson 95% confidence intervals.
-- Audits duplicate seeds and episode indices, invalid success values, inconsistent counts, skipped candidates, undeclared retries, out-of-range candidates, inconsistent failure totals, action-step violations, and missing provenance (RA001–RA008, RA013–RA015 subset).
-- Compares runs using a normalized protocol fingerprint and refuses unsafe observation/evaluator comparisons with RA009/RA010.
-- Runs as a native MoonBit executable and has anonymous fixtures.
-
-P1 work still in progress: JSONL/CSV, action-step distributions, stage funnels, manifest hashing, artifact validation, training/evaluation seed overlap, and 60+ tests. They are not claimed as complete.
+Input CSV intentionally supports only simple unquoted fields. Use JSON or JSONL when values contain commas or embedded newlines. No models, videos, raw datasets, simulator assets, credentials, or unknown-license content are included.
 
 ## Quick start
 
 ```powershell
-moon fmt
+moon fmt --check
+moon info
 moon check --target native
 moon test --target native
+moon build --target native
 moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
-moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
 ```
 
 ## Commands
@@ -30,18 +30,28 @@ moon run --target native cmd/main -- validate examples/minimal/audit-findings.js
 roboaudit validate <file>
 roboaudit summarize <file>
 roboaudit audit <file>
+roboaudit compare <file-a> <file-b>
 roboaudit report <file>
 roboaudit report-json <file>
+roboaudit report-csv <file>
 roboaudit fingerprint <file>
-roboaudit compare <file-a> <file-b>
+roboaudit manifest <paths...>
+roboaudit verify-file <path> <sha256>
 ```
 
-`validate` prints `valid` or stable `RAxxx` findings. `report` emits human-readable Markdown. A non-empty `skipped` list is intentionally flagged so a success rate cannot hide excluded candidates.
+`validate` and `audit` print `valid` or stable `RAxxx` findings. `summarize` and `report-json` emit structured JSON; `report` emits Markdown. A non-empty `skipped` list is deliberately flagged so a success rate cannot conceal excluded candidates.
 
-## Data and provenance
+## Documentation
 
-No remote reference artifacts are committed. `examples/robosyn/evaluation-metrics-anonymized.json` is a hand-written, anonymous schema fixture. See [docs/provenance.md](docs/provenance.md).
+- [Architecture](docs/architecture.md)
+- [Canonical schema](docs/schema.md)
+- [Audit rules](docs/audit-rules.md)
+- [Reproducibility](docs/reproducibility.md)
+- [Reference evidence](docs/reference-evidence.md)
+- [Provenance and safe-data policy](docs/provenance.md)
+- [AI assistance](docs/ai-assistance.md)
+- [Native benchmark evidence](benchmarks/README.md)
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [docs/ai-assistance.md](docs/ai-assistance.md).
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

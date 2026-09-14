@@ -1,0 +1,2 @@
+{"task":"synthetic-jsonl","protocol":"seeded-v1","observation_mode":"state","evaluator_version":"fixture-v1","episode_index":0,"seed":201,"success":true,"action_steps":5}
+{"task":"synthetic-jsonl","protocol":"seeded-v1","observation_mode":"state","evaluator_version":"fixture-v1","episode_index":1,"seed":202,"success":false,"action_steps":8,"failure_type":"timeout"}

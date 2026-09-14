@@ -1,20 +1,80 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbit-hackathon/roboaudit"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
 pub fn compare_json(String, String) -> String
 
 pub fn protocol_fingerprint(String) -> String
 
+pub fn report_csv(String) -> String
+
 pub fn report_json(String) -> String
 
 pub fn report_markdown(String) -> String
+
+pub fn sha256_bytes(Bytes) -> String
+
+pub fn sha256_text(String) -> String
 
 pub fn validate_json(String) -> String
 
 // Errors
 
 // Types and methods
+pub(all) struct ArtifactRef {
+  path : String
+  expected_sha256 : String?
+  observed_sha256 : String?
+  exists : Bool
+} derive(Eq, @debug.Debug)
+
+pub(all) struct AuditFinding {
+  rule_id : String
+  severity : String
+  path : String
+  message : String
+  suggestion : String
+} derive(Eq, ToJson, @debug.Debug)
+
+pub(all) struct Episode {
+  index : Int
+  index_is_present : Bool
+  candidate_index : Int?
+  attempt_index : Int?
+  seed : Int?
+  success : Bool
+  success_is_valid : Bool
+  action_steps : Int?
+  failure_type : String?
+  stages : Array[Stage]
+  artifact_refs : Array[ArtifactRef]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Run {
+  run_id : String
+  task : String
+  protocol : String
+  observation_mode : String
+  evaluator_version : String
+  success_definition : String
+  timeout_steps : Int?
+  declared_episode_count : Int?
+  declared_success_count : Int?
+  declared_failure_count : Int?
+  retry_policy : String
+  episodes : Array[Episode]
+  skipped_reasons : Array[String]
+  training_seeds : Array[Int]
+} derive(Eq, @debug.Debug)
+
+pub(all) struct Stage {
+  name : String
+  completed : Bool
+} derive(Eq, @debug.Debug)
 
 // Type aliases
 

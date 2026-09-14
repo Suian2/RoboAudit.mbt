@@ -7,8 +7,8 @@
   "timeout_steps": 30,
   "summary": { "episodes": 3 },
   "episodes": [
-    { "episode_index": 0, "seed": 101, "success": true, "action_steps": 12 },
-    { "episode_index": 1, "seed": 102, "success": false, "action_steps": 30, "failure_type": "timeout" },
-    { "episode_index": 2, "seed": 103, "success": true, "action_steps": 9 }
+    { "episode_index": 0, "seed": 101, "success": true, "action_steps": 12, "stages": ["reach", "grasp", "place"] },
+    { "episode_index": 1, "seed": 102, "success": false, "action_steps": 30, "failure_type": "timeout", "stages": [{"name":"reach","completed":true},{"name":"grasp","completed":true},{"name":"place","completed":false}] },
+    { "episode_index": 2, "seed": 103, "success": true, "action_steps": 9, "stages": ["reach", "grasp", "place"] }
   ]
 }

@@ -16,3 +16,8 @@ jobs:
       - run: moon test --target native
       - run: moon build --target native
       - run: moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
+      - run: moon run --target native cmd/main -- summarize examples/minimal/episodes.jsonl
+      - run: moon run --target native cmd/main -- summarize examples/minimal/episodes.csv
+      - run: moon run --target native cmd/main -- report-csv examples/minimal/canonical-clean.json
+      - run: moon run --target native cmd/main -- manifest examples/minimal/episodes.csv examples/minimal/episodes.jsonl
+      - run: moon package --list

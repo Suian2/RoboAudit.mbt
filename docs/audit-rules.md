@@ -1,9 +1,9 @@
-# Audit rules implemented now
+# Audit rules
 
-| Rule | Current check |
+| Rule | Check |
 | --- | --- |
 | RA001 | Duplicate present evaluation seeds |
-| RA002 | Duplicate episode indices |
+| RA002 | Missing fallback or duplicate episode indices |
 | RA003 | Missing or non-boolean success |
 | RA004 | Declared success count differs from recomputation |
 | RA005 | Declared episode count differs from parsed episodes |
@@ -12,8 +12,10 @@
 | RA008 | Candidate index exceeds final episode count |
 | RA009 | Compared observation modes differ |
 | RA010 | Compared evaluator or success definitions differ |
+| RA011 | Training and evaluation seed sets overlap |
+| RA012 | Artifact is missing, unverifiable, or hash-mismatched |
 | RA013 | Declared/annotated failures contradict failed episodes |
 | RA014 | Negative action steps or successful timeout violation |
 | RA015 | Missing task/evaluator provenance |
 
-Rules RA011–RA012 remain planned; the rule IDs are reserved to match the project proposal.
+Findings have stable `rule_id`, `severity`, `path`, `message`, and `suggestion` fields in JSON reports. RA012 consumes explicit `exists`, expected `sha256`, and `observed_sha256` evidence in canonical episode artifact references. The CLI `verify-file` command computes observed hashes directly from original file bytes.

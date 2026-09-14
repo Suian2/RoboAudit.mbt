@@ -2,8 +2,11 @@
 
 - [x] MoonBit is the core implementation language.
 - [x] Native CLI, fixtures, tests, documentation, Apache-2.0 license, NOTICE, provenance, and AI-assistance disclosure are present locally.
-- [x] CI workflow checks format, interface, native check/test/build, and a demo command.
-- [ ] Expand P1 implementation and test matrix before external submission.
+- [x] CI checks format, interface, native check/test/build, JSON/JSONL/CSV demos, manifest, and package list.
+- [x] RA001-RA015, 60+ tests, statistical reports, compare/fingerprint, JSONL/CSV, manifest/hash, benchmark, and documentation are implemented locally.
+- [ ] Finish and record the ten-task read-only reference metadata audit and clean-directory reproduction.
+- [ ] Set the final public repository URL in `moon.mod`.
+- [ ] Repeat `moon publish --dry-run` after Mooncakes login; the package/check phase succeeds but credentials are absent.
 - [ ] Create/push a public repository only after contributor confirmation.
 - [ ] Complete official registration and final submission only after contributor confirmation.
 - [ ] Confirm current contest notices and participation-group requirements before submitting.

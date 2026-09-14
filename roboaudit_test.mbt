@@ -27,3 +27,11 @@ test "public compare refuses incompatible observation protocols" {
     #|{"task":"t","observation_mode":"state","evaluator_version":"v","episodes":[]}
   assert_true(@roboaudit.compare_json(first, second).contains("RA009"))
 }
+
+///|
+test "public SHA-256 API matches standard vector" {
+  assert_eq(
+    @roboaudit.sha256_text("abc"),
+    "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+  )
+}

@@ -1,7 +1,31 @@
 ///|
 /// Canonical, license-safe in-memory representation of one evaluated episode.
-priv struct Episode {
+pub(all) struct Stage {
+  name : String
+  completed : Bool
+} derive(Eq, Debug)
+
+///|
+pub(all) struct AuditFinding {
+  rule_id : String
+  severity : String
+  path : String
+  message : String
+  suggestion : String
+} derive(Eq, Debug, ToJson)
+
+///|
+pub(all) struct ArtifactRef {
+  path : String
+  expected_sha256 : String?
+  observed_sha256 : String?
+  exists : Bool
+} derive(Eq, Debug)
+
+///|
+pub(all) struct Episode {
   index : Int
+  index_is_present : Bool
   candidate_index : Int?
   attempt_index : Int?
   seed : Int?
@@ -9,11 +33,13 @@ priv struct Episode {
   success_is_valid : Bool
   action_steps : Int?
   failure_type : String?
-}
+  stages : Array[Stage]
+  artifact_refs : Array[ArtifactRef]
+} derive(Eq, Debug)
 
 ///|
 /// Canonical representation shared by canonical JSON and the RoboSyn adapter.
-priv struct Run {
+pub(all) struct Run {
   run_id : String
   task : String
   protocol : String
@@ -27,6 +53,16 @@ priv struct Run {
   retry_policy : String
   episodes : Array[Episode]
   skipped_reasons : Array[String]
+  training_seeds : Array[Int]
+} derive(Eq, Debug)
+
+///|
+priv struct StepStats {
+  count : Int
+  mean : Double
+  median : Double
+  minimum : Int?
+  maximum : Int?
 }
 
 ///|
@@ -80,7 +116,7 @@ fn object_field(value : Json, object_key : String, field_key : String) -> Json? 
 
 ///|
 fn parse_episode(value : Json, fallback_index : Int) -> Episode {
-  let index = match json_int(json_field(value, "episode_index")) {
+  let explicit_index = match json_int(json_field(value, "episode_index")) {
     Some(value) => value
     None =>
       match json_int(json_field(value, "index")) {
@@ -88,9 +124,12 @@ fn parse_episode(value : Json, fallback_index : Int) -> Episode {
         None => fallback_index
       }
   }
+  let index_is_present = json_int(json_field(value, "episode_index")) is Some(_) ||
+    json_int(json_field(value, "index")) is Some(_)
   let (success, success_is_valid) = json_bool(json_field(value, "success"))
   {
-    index,
+    index: explicit_index,
+    index_is_present,
     candidate_index: json_int(json_field(value, "candidate_index")),
     attempt_index: match json_int(json_field(value, "attempt_index")) {
       Some(value) => Some(value)
@@ -101,6 +140,75 @@ fn parse_episode(value : Json, fallback_index : Int) -> Episode {
     success_is_valid,
     action_steps: json_int(json_field(value, "action_steps")),
     failure_type: json_string(json_field(value, "failure_type")),
+    stages: parse_stages(json_field(value, "stages")),
+    artifact_refs: parse_artifact_refs(json_field(value, "artifact_refs")),
+  }
+}
+
+///|
+fn parse_artifact_refs(value : Json?) -> Array[ArtifactRef] {
+  match value {
+    Some(Array(values)) => {
+      let refs : Array[ArtifactRef] = []
+      for value in values {
+        if value is Object(_) {
+          let (exists, exists_valid) = json_bool(json_field(value, "exists"))
+          refs.push({
+            path: string_or(json_string(json_field(value, "path")), ""),
+            expected_sha256: json_string(json_field(value, "sha256")),
+            observed_sha256: json_string(json_field(value, "observed_sha256")),
+            exists: exists_valid && exists,
+          })
+        }
+      }
+      refs
+    }
+    _ => []
+  }
+}
+
+///|
+fn parse_int_array(value : Json?) -> Array[Int] {
+  let values : Array[Int] = []
+  match value {
+    Some(Array(items)) =>
+      for item in items {
+        match json_int(Some(item)) {
+          Some(value) => values.push(value)
+          None => ()
+        }
+      }
+    _ => ()
+  }
+  values
+}
+
+///|
+fn parse_stages(value : Json?) -> Array[Stage] {
+  match value {
+    Some(Array(values)) => {
+      let stages : Array[Stage] = []
+      for value in values {
+        match value {
+          String(name) => stages.push({ name, completed: true, })
+          Object(_) => {
+            let name = string_or(
+              json_string(json_field(value, "name")),
+              string_or(json_string(json_field(value, "stage")), "unnamed"),
+            )
+            let (completed, valid) = match
+              json_bool(json_field(value, "completed")) {
+              (completed, true) => (completed, true)
+              _ => json_bool(json_field(value, "success"))
+            }
+            stages.push({ name, completed: valid && completed, })
+          }
+          _ => ()
+        }
+      }
+      stages
+    }
+    _ => []
   }
 }
 
@@ -184,13 +292,224 @@ fn parse_run(value : Json) -> Run {
     ),
     episodes: parse_episodes(json_field(value, "episodes")),
     skipped_reasons: parse_skipped_reasons(json_field(value, "skipped")),
+    training_seeds: parse_int_array(json_field(value, "training_seeds")),
+  }
+}
+
+///|
+fn parse_json_input(input : String) -> Run? {
+  let value : Json? = Some(@json.parse(input)) catch { _ => None }
+  match value {
+    Some(value) =>
+      if json_field(value, "success") is Some(_) &&
+        json_field(value, "episodes") is None {
+        None
+      } else {
+        Some(parse_run(value))
+      }
+    None => None
+  }
+}
+
+///|
+fn run_with_episodes(template : Run, episodes : Array[Episode]) -> Run {
+  {
+    run_id: template.run_id,
+    task: template.task,
+    protocol: template.protocol,
+    observation_mode: template.observation_mode,
+    evaluator_version: template.evaluator_version,
+    success_definition: template.success_definition,
+    timeout_steps: template.timeout_steps,
+    declared_episode_count: template.declared_episode_count,
+    declared_success_count: template.declared_success_count,
+    declared_failure_count: template.declared_failure_count,
+    retry_policy: template.retry_policy,
+    episodes,
+    skipped_reasons: template.skipped_reasons,
+    training_seeds: template.training_seeds,
+  }
+}
+
+///|
+fn parse_jsonl_input(input : String) -> Run? {
+  let episodes : Array[Episode] = []
+  let mut template : Run? = None
+  let mut row = 0
+  for raw_line in input.split("\n") {
+    let line = raw_line.trim()
+    if !line.is_empty() {
+      let value : Json? = Some(@json.parse(line)) catch { _ => None }
+      match value {
+        Some(value) => {
+          if template is None {
+            template = Some(parse_run(value))
+          }
+          episodes.push(parse_episode(value, row))
+          row += 1
+        }
+        None => return None
+      }
+    }
+  }
+  match template {
+    Some(template) => Some(run_with_episodes(template, episodes))
+    None => None
+  }
+}
+
+///|
+fn parse_int_text(value : String) -> Int? {
+  Some(@string.parse_int(value)) catch {
+    _ => None
+  }
+}
+
+///|
+fn csv_cells(line : StringView) -> Array[String] {
+  let cells : Array[String] = []
+  for value in line.split(",") {
+    cells.push(value.trim().to_owned())
+  }
+  cells
+}
+
+///|
+fn csv_index(headers : Array[String], name : String) -> Int? {
+  for index, header in headers {
+    if header == name {
+      return Some(index)
+    }
+  }
+  None
+}
+
+///|
+fn csv_value(
+  headers : Array[String],
+  cells : Array[String],
+  name : String,
+) -> String? {
+  match csv_index(headers, name) {
+    Some(index) =>
+      if index < cells.length() && !cells[index].is_empty() {
+        Some(cells[index])
+      } else {
+        None
+      }
+    None => None
+  }
+}
+
+///|
+fn csv_int(
+  headers : Array[String],
+  cells : Array[String],
+  name : String,
+) -> Int? {
+  match csv_value(headers, cells, name) {
+    Some(value) => parse_int_text(value)
+    None => None
+  }
+}
+
+///|
+fn csv_bool(headers : Array[String], cells : Array[String]) -> (Bool, Bool) {
+  match csv_value(headers, cells, "success") {
+    Some("true") | Some("1") => (true, true)
+    Some("false") | Some("0") => (false, true)
+    _ => (false, false)
+  }
+}
+
+///|
+fn parse_csv_input(input : String) -> Run? {
+  let headers : Array[String] = []
+  let episodes : Array[Episode] = []
+  let mut saw_header = false
+  let mut task = "unknown"
+  let mut evaluator_version = "unspecified"
+  let mut protocol = "unspecified"
+  let mut observation_mode = "unspecified"
+  for raw_line in input.split("\n") {
+    let line = raw_line.trim()
+    if !line.is_empty() {
+      if !saw_header {
+        headers.push_iter(line.split(",").map(value => value.trim().to_owned()))
+        if csv_index(headers, "success") is None ||
+          csv_index(headers, "episode_index") is None {
+          return None
+        }
+        saw_header = true
+      } else {
+        let cells = csv_cells(line)
+        let (success, success_is_valid) = csv_bool(headers, cells)
+        let fallback_index = episodes.length()
+        episodes.push({
+          index: match csv_int(headers, cells, "episode_index") {
+            Some(value) => value
+            None => fallback_index
+          },
+          index_is_present: csv_int(headers, cells, "episode_index") is Some(_),
+          candidate_index: csv_int(headers, cells, "candidate_index"),
+          attempt_index: match csv_int(headers, cells, "attempt_index") {
+            Some(value) => Some(value)
+            None => csv_int(headers, cells, "episode_attempt_index")
+          },
+          seed: csv_int(headers, cells, "seed"),
+          success,
+          success_is_valid,
+          action_steps: csv_int(headers, cells, "action_steps"),
+          failure_type: csv_value(headers, cells, "failure_type"),
+          stages: [],
+          artifact_refs: [],
+        })
+        if episodes.length() == 1 {
+          task = string_or(csv_value(headers, cells, "task"), task)
+          evaluator_version = string_or(
+            csv_value(headers, cells, "evaluator_version"),
+            evaluator_version,
+          )
+          protocol = string_or(csv_value(headers, cells, "protocol"), protocol)
+          observation_mode = string_or(
+            csv_value(headers, cells, "observation_mode"),
+            observation_mode,
+          )
+        }
+      }
+    }
+  }
+  if !saw_header {
+    None
+  } else {
+    Some({
+      run_id: "csv-run",
+      task,
+      protocol,
+      observation_mode,
+      evaluator_version,
+      success_definition: "unspecified",
+      timeout_steps: None,
+      declared_episode_count: None,
+      declared_success_count: None,
+      declared_failure_count: None,
+      retry_policy: "unspecified",
+      episodes,
+      skipped_reasons: [],
+      training_seeds: [],
+    })
   }
 }
 
 ///|
 fn parse_input(input : String) -> Run? {
-  Some(parse_run(@json.parse(input))) catch {
-    _ => None
+  match parse_json_input(input) {
+    Some(run) => Some(run)
+    None =>
+      match parse_jsonl_input(input) {
+        Some(run) => Some(run)
+        None => parse_csv_input(input)
+      }
   }
 }
 
@@ -236,7 +555,23 @@ fn run_issues(run : Run) -> Array[String] {
   if !run.skipped_reasons.is_empty() {
     add_issue(issues, "RA006", "skipped candidates require disclosure")
   }
+  for training_seed in run.training_seeds {
+    for episode in run.episodes {
+      match episode.seed {
+        Some(evaluation_seed) =>
+          if training_seed == evaluation_seed {
+            add_issue(
+              issues, "RA011", "training and evaluation seed sets overlap",
+            )
+          }
+        None => ()
+      }
+    }
+  }
   for episode in run.episodes {
+    if !episode.index_is_present {
+      add_issue(issues, "RA002", "episode_index is missing or invalid")
+    }
     if !episode.success_is_valid {
       add_issue(
         issues,
@@ -285,6 +620,22 @@ fn run_issues(run : Run) -> Array[String] {
         }
       None => ()
     }
+    for artifact in episode.artifact_refs {
+      let missing_metadata = artifact.path.is_empty() ||
+        artifact.expected_sha256 is None ||
+        artifact.observed_sha256 is None
+      let mismatch = match
+        (artifact.expected_sha256, artifact.observed_sha256) {
+        (Some(expected), Some(observed)) =>
+          expected.to_lower() != observed.to_lower()
+        _ => false
+      }
+      if !artifact.exists || missing_metadata || mismatch {
+        add_issue(
+          issues, "RA012", "artifact reference is missing, unverifiable, or has a hash mismatch",
+        )
+      }
+    }
   }
   for left in 0..<run.episodes.length() {
     let mut right = left + 1
@@ -303,6 +654,29 @@ fn run_issues(run : Run) -> Array[String] {
     }
   }
   issues
+}
+
+///|
+fn audit_findings(run : Run) -> Array[AuditFinding] {
+  let findings : Array[AuditFinding] = []
+  for issue in run_issues(run) {
+    match issue.split_once(": ") {
+      Some((rule_id, message)) =>
+        findings.push({
+          rule_id: rule_id.to_owned(),
+          severity: if rule_id == "RA006" {
+            "warning"
+          } else {
+            "error"
+          },
+          path: "/",
+          message: message.to_owned(),
+          suggestion: "Review the source episode log and declared evaluation protocol.",
+        })
+      None => ()
+    }
+  }
+  findings
 }
 
 ///|
@@ -333,11 +707,167 @@ fn annotated_failure_count(run : Run) -> Int {
 }
 
 ///|
+fn action_step_stats(run : Run, group : Int) -> StepStats {
+  let values : Array[Int] = []
+  let mut total = 0
+  for episode in run.episodes {
+    let included = group == 0 ||
+      (group == 1 && episode.success) ||
+      (group == 2 && !episode.success)
+    if included {
+      match episode.action_steps {
+        Some(value) => {
+          values.push(value)
+          total += value
+        }
+        None => ()
+      }
+    }
+  }
+  values.sort_by((left, right) => {
+    if left < right {
+      -1
+    } else if left > right {
+      1
+    } else {
+      0
+    }
+  })
+  if values.is_empty() {
+    { count: 0, mean: 0.0, median: 0.0, minimum: None, maximum: None, }
+  } else {
+    let count = values.length()
+    let median = if count % 2 == 1 {
+      values[count / 2].to_double()
+    } else {
+      (values[count / 2 - 1].to_double() + values[count / 2].to_double()) / 2.0
+    }
+    {
+      count,
+      mean: total.to_double() / count.to_double(),
+      median,
+      minimum: Some(values[0]),
+      maximum: Some(values[count - 1]),
+    }
+  }
+}
+
+///|
+fn optional_int_json(value : Int?) -> Json {
+  match value {
+    Some(value) => Json::number(value.to_double())
+    None => Json::null()
+  }
+}
+
+///|
+fn step_stats_json(stats : StepStats) -> Json {
+  {
+    "count": stats.count,
+    "mean": stats.mean,
+    "median": stats.median,
+    "minimum": optional_int_json(stats.minimum),
+    "maximum": optional_int_json(stats.maximum),
+  }
+}
+
+///|
+fn increment_label(
+  labels : Array[String],
+  counts : Array[Int],
+  label : String,
+) -> Unit {
+  for index, current in labels {
+    if current == label {
+      counts[index] = counts[index] + 1
+      return
+    }
+  }
+  labels.push(label)
+  counts.push(1)
+}
+
+///|
+fn distribution_json(labels : Array[String], counts : Array[Int]) -> Json {
+  let entries : Array[Json] = []
+  for index, label in labels {
+    entries.push({ "name": label, "count": counts[index] })
+  }
+  Json::array(entries)
+}
+
+///|
+fn failure_distribution_json(run : Run) -> Json {
+  let labels : Array[String] = []
+  let counts : Array[Int] = []
+  for episode in run.episodes {
+    match episode.failure_type {
+      Some(label) => increment_label(labels, counts, label)
+      None => ()
+    }
+  }
+  distribution_json(labels, counts)
+}
+
+///|
+fn skipped_distribution_json(run : Run) -> Json {
+  let labels : Array[String] = []
+  let counts : Array[Int] = []
+  for reason in run.skipped_reasons {
+    increment_label(labels, counts, reason)
+  }
+  distribution_json(labels, counts)
+}
+
+///|
+fn stage_funnel_json(run : Run) -> Json {
+  let names : Array[String] = []
+  let observed : Array[Int] = []
+  let completed : Array[Int] = []
+  for episode in run.episodes {
+    for stage in episode.stages {
+      let mut found = false
+      for index, name in names {
+        if name == stage.name {
+          observed[index] = observed[index] + 1
+          if stage.completed {
+            completed[index] = completed[index] + 1
+          }
+          found = true
+        }
+      }
+      if !found {
+        names.push(stage.name)
+        observed.push(1)
+        completed.push(if stage.completed { 1 } else { 0 })
+      }
+    }
+  }
+  let entries : Array[Json] = []
+  for index, name in names {
+    entries.push({
+      "stage": name,
+      "observed_count": observed[index],
+      "completed_count": completed[index],
+    })
+  }
+  Json::array(entries)
+}
+
+///|
 fn rate_text(successes : Int, total : Int) -> String {
   if total == 0 {
     "n/a"
   } else {
     (successes.to_double() * 100.0 / total.to_double()).to_string() + "%"
+  }
+}
+
+///|
+fn optional_int_text(value : Int?) -> String {
+  match value {
+    Some(value) => value.to_string()
+    None => "n/a"
   }
 }
 
@@ -355,14 +885,22 @@ fn wilson_interval(successes : Int, total : Int) -> (Double, Double) {
     let margin = z *
       (p * (1.0 - p) / n + z2 / (4.0 * n * n)).sqrt() /
       denominator
-    let low = if center - margin < 0.0 { 0.0 } else { center - margin }
-    let high = if center + margin > 1.0 { 1.0 } else { center + margin }
+    let low = if successes == 0 || center - margin < 0.0 {
+      0.0
+    } else {
+      center - margin
+    }
+    let high = if successes == total || center + margin > 1.0 {
+      1.0
+    } else {
+      center + margin
+    }
     (low, high)
   }
 }
 
 ///|
-fn protocol_fingerprint_of(run : Run) -> String {
+fn protocol_signature_of(run : Run) -> String {
   let timeout = match run.timeout_steps {
     Some(value) => value.to_string()
     None => "unspecified"
@@ -381,6 +919,11 @@ fn protocol_fingerprint_of(run : Run) -> String {
   run.retry_policy +
   "|success=" +
   run.success_definition
+}
+
+///|
+fn protocol_fingerprint_of(run : Run) -> String {
+  "sha256:" + sha256_text(protocol_signature_of(run))
 }
 
 ///|
@@ -469,6 +1012,10 @@ fn compare_runs(first : Run, second : Run) -> String {
 ///|
 fn markdown_report(run : Run) -> String {
   let successes = success_count(run)
+  let (wilson_low, wilson_high) = wilson_interval(
+    successes,
+    run.episodes.length(),
+  )
   let issues = run_issues(run)
   let output = StringBuilder()
   output.write_string("# RoboAudit report\n\n")
@@ -485,6 +1032,13 @@ fn markdown_report(run : Run) -> String {
     " (" +
     rate_text(successes, run.episodes.length()) +
     ")\n\n",
+  )
+  output.write_string(
+    "- Wilson 95% CI: [" +
+    wilson_low.to_string() +
+    ", " +
+    wilson_high.to_string() +
+    "]\n\n",
   )
   output.write_string("## Audit findings\n\n")
   if issues.is_empty() {
@@ -510,6 +1064,47 @@ fn markdown_report(run : Run) -> String {
   if annotations == 0 {
     output.write_string("No failure annotations.\n")
   }
+  let all_steps = action_step_stats(run, 0)
+  let success_steps = action_step_stats(run, 1)
+  let failure_steps = action_step_stats(run, 2)
+  output.write_string("\n## Action steps\n\n")
+  output.write_string(
+    "- All: count=" +
+    all_steps.count.to_string() +
+    ", mean=" +
+    all_steps.mean.to_string() +
+    ", median=" +
+    all_steps.median.to_string() +
+    ", min=" +
+    optional_int_text(all_steps.minimum) +
+    ", max=" +
+    optional_int_text(all_steps.maximum) +
+    "\n",
+  )
+  output.write_string(
+    "- Successful: count=" +
+    success_steps.count.to_string() +
+    ", mean=" +
+    success_steps.mean.to_string() +
+    "\n",
+  )
+  output.write_string(
+    "- Failed: count=" +
+    failure_steps.count.to_string() +
+    ", mean=" +
+    failure_steps.mean.to_string() +
+    "\n",
+  )
+  output.write_string("\n## Distributions\n\n")
+  output.write_string(
+    "- Failure types: `" + failure_distribution_json(run).stringify() + "`\n",
+  )
+  output.write_string(
+    "- Stage funnel: `" + stage_funnel_json(run).stringify() + "`\n",
+  )
+  output.write_string(
+    "- Skipped reasons: `" + skipped_distribution_json(run).stringify() + "`\n",
+  )
   output.to_string()
 }
 
@@ -523,7 +1118,10 @@ fn json_report(run : Run) -> String {
     successes.to_double() / total.to_double()
   }
   let (wilson_low, wilson_high) = wilson_interval(successes, total)
-  let findings = run_issues(run)
+  let findings = audit_findings(run)
+  let all_steps = action_step_stats(run, 0)
+  let success_steps = action_step_stats(run, 1)
+  let failure_steps = action_step_stats(run, 2)
   let result : Json = {
     "schema_version": "1.0",
     "run_id": run.run_id,
@@ -537,10 +1135,63 @@ fn json_report(run : Run) -> String {
       "wilson_95_low": wilson_low,
       "wilson_95_high": wilson_high,
       "skipped_count": run.skipped_reasons.length(),
+      "action_steps": {
+        "all": step_stats_json(all_steps),
+        "successful": step_stats_json(success_steps),
+        "failed": step_stats_json(failure_steps),
+      },
+      "failure_types": failure_distribution_json(run),
+      "stage_funnel": stage_funnel_json(run),
+      "skipped_reasons": skipped_distribution_json(run),
     },
     "audit": { "finding_count": findings.length(), "findings": findings },
   }
   result.stringify(indent=2)
+}
+
+///|
+fn csv_escape(value : String) -> String {
+  let output = StringBuilder()
+  output.write_char('"')
+  for character in value {
+    if character == '"' {
+      output.write_string("\"\"")
+    } else {
+      output.write_char(character)
+    }
+  }
+  output.write_char('"')
+  output.to_string()
+}
+
+///|
+fn csv_report(run : Run) -> String {
+  let successes = success_count(run)
+  let total = run.episodes.length()
+  let rate = if total == 0 {
+    ""
+  } else {
+    (successes.to_double() / total.to_double()).to_string()
+  }
+  "run_id,task,protocol_fingerprint,episode_count,success_count,failure_count,success_rate,skipped_count,finding_count\n" +
+  csv_escape(run.run_id) +
+  "," +
+  csv_escape(run.task) +
+  "," +
+  csv_escape(protocol_fingerprint_of(run)) +
+  "," +
+  total.to_string() +
+  "," +
+  successes.to_string() +
+  "," +
+  failure_count(run).to_string() +
+  "," +
+  rate +
+  "," +
+  run.skipped_reasons.length().to_string() +
+  "," +
+  run_issues(run).length().to_string() +
+  "\n"
 }
 
 ///|
@@ -575,6 +1226,15 @@ pub fn report_json(input : String) -> String {
     Some(run) => json_report(run)
     None =>
       "{\n  \"schema_version\": \"1.0\",\n  \"error\": \"RA000: invalid JSON input\"\n}"
+  }
+}
+
+///|
+/// Produce a deterministic one-row CSV summary with RFC-style field quoting.
+pub fn report_csv(input : String) -> String {
+  match parse_input(input) {
+    Some(run) => csv_report(run)
+    None => "error\n\"RA000: invalid JSON, JSONL, or CSV input\"\n"
   }
 }
 
