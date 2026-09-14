@@ -1,0 +1,14 @@
+{
+  "run_id": "fixture-canonical-clean",
+  "task": "synthetic-pick-place",
+  "protocol": "random-seed-evaluation-v1",
+  "observation_mode": "rgbd",
+  "evaluator_version": "roboaudit-fixture-v1",
+  "timeout_steps": 30,
+  "summary": { "episodes": 3 },
+  "episodes": [
+    { "episode_index": 0, "seed": 101, "success": true, "action_steps": 12 },
+    { "episode_index": 1, "seed": 102, "success": false, "action_steps": 30, "failure_type": "timeout" },
+    { "episode_index": 2, "seed": 103, "success": true, "action_steps": 9 }
+  ]
+}

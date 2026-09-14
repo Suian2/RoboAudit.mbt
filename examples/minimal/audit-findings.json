@@ -1,0 +1,14 @@
+{
+  "run_id": "fixture-audit-findings",
+  "task": "synthetic-audit",
+  "evaluator_version": "roboaudit-fixture-v1",
+  "timeout_steps": 10,
+  "summary": { "episodes": 3 },
+  "episodes": [
+    { "episode_index": 0, "seed": 7, "success": true, "action_steps": 11 },
+    { "episode_index": 0, "seed": 7, "success": "yes", "action_steps": -1 }
+  ],
+  "skipped": [
+    { "reason": "synthetic_generation_failure" }
+  ]
+}

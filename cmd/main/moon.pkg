@@ -1,0 +1,10 @@
+import {
+  "moonbit-hackathon/roboaudit" @lib,
+  "moonbitlang/core/argparse",
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "+native"
