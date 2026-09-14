@@ -56,3 +56,19 @@ test "audit recomputes summary and retry fields" {
 test "invalid JSON reports parser error" {
   assert_eq(validate_json("{not-json}"), "RA000: invalid JSON input")
 }
+
+///|
+test "RoboSyn field aliases normalize without count finding" {
+  let input =
+    #|{
+    #|  "config": { "task": "real-shape", "timeout_action_steps": 9 },
+    #|  "evaluator_version": "v1",
+    #|  "summary": { "episode_count": 1, "success_count": 1 },
+    #|  "episodes": [
+    #|    { "episode_index": 0, "episode_attempt_index": 0, "seed": 17, "success": true, "action_steps": 9 }
+    #|  ]
+    #|}
+  let findings = validate_json(input)
+  assert_true(!findings.contains("RA004"))
+  assert_true(!findings.contains("RA005"))
+}

@@ -6,10 +6,10 @@
   },
   "protocol": "random100",
   "evaluator_version": "anonymized-evaluator-v1",
-  "summary": { "episodes": 2 },
+  "summary": { "episode_count": 2, "success_count": 1 },
   "episodes": [
-    { "episode_index": 0, "candidate_index": 0, "seed": 501, "success": true, "action_steps": 18 },
-    { "episode_index": 1, "candidate_index": 1, "seed": 502, "success": false, "action_steps": 25, "failure_type": "grasp_missed" }
+    { "episode_index": 0, "candidate_index": 0, "episode_attempt_index": 0, "seed": 501, "success": true, "action_steps": 18 },
+    { "episode_index": 1, "candidate_index": 1, "episode_attempt_index": 0, "seed": 502, "success": false, "action_steps": 25, "failure_type": "grasp_missed" }
   ],
   "skipped": [
     { "candidate_index": 2, "reason": "expert_action_generation_failed" }

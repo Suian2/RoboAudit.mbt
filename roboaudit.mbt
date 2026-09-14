@@ -91,7 +91,10 @@ fn parse_episode(value : Json, fallback_index : Int) -> Episode {
   {
     index,
     candidate_index: json_int(json_field(value, "candidate_index")),
-    attempt_index: json_int(json_field(value, "attempt_index")),
+    attempt_index: match json_int(json_field(value, "attempt_index")) {
+      Some(value) => Some(value)
+      None => json_int(json_field(value, "episode_attempt_index"))
+    },
     seed: json_int(json_field(value, "seed")),
     success,
     success_is_valid,
@@ -155,8 +158,15 @@ fn parse_run(value : Json) -> Run {
       json_string(json_field(value, "evaluator_version")),
       "unspecified",
     ),
-    timeout_steps: json_int(json_field(value, "timeout_steps")),
-    declared_episode_count: json_int(object_field(value, "summary", "episodes")),
+    timeout_steps: match json_int(json_field(value, "timeout_steps")) {
+      Some(value) => Some(value)
+      None => json_int(object_field(value, "config", "timeout_action_steps"))
+    },
+    declared_episode_count: match
+      json_int(object_field(value, "summary", "episodes")) {
+      Some(value) => Some(value)
+      None => json_int(object_field(value, "summary", "episode_count"))
+    },
     declared_success_count: json_int(
       object_field(value, "summary", "success_count"),
     ),
