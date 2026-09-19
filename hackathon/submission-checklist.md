@@ -7,6 +7,7 @@
 - [x] Reproduce format/check/test/build/package from a clean local clone.
 - [x] Finish and record the accessible ten-task read-only reference metadata audit; retain an explicit ACL limitation for protected historical snapshots.
 - [x] Set the intended public repository URL and `Suian2/roboaudit` module identity in `moon.mod`.
+- [ ] Before public push, confirm whether the existing Git author email may be public; otherwise rewrite the unpublished history to a GitHub noreply address with explicit contributor approval.
 - [ ] Repeat `moon publish --dry-run` after Mooncakes login; the package/check phase succeeds but credentials are absent.
 - [ ] Create/push a public repository only after contributor confirmation.
 - [ ] Complete official registration and final submission only after contributor confirmation.
