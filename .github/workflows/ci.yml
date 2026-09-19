@@ -7,6 +7,9 @@ on:
 permissions:
   contents: read
 
+env:
+  MOONBIT_INSTALL_VERSION: 0.1.20260904
+
 jobs:
   native:
     name: native / ${{ matrix.os }}
@@ -17,7 +20,22 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
-      - uses: moonbitlang/setup-moonbit@v1
+      - name: Install MoonBit (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s "$MOONBIT_INSTALL_VERSION"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Install MoonBit (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-RestMethod https://cli.moonbitlang.com/install/powershell.ps1 | Invoke-Expression
+          "$HOME\.moon\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Resolve toolchain and dependencies
+        run: |
+          moon version --all
+          moon update
       - run: moon fmt --check
       - run: moon info
       - name: Generated interfaces are current
