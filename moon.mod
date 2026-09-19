@@ -9,17 +9,17 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "moonbit-hackathon/roboaudit"
+name = "Suian2/roboaudit"
 
 version = "0.1.0"
 
 readme = "README.md"
 
-repository = ""
+repository = "https://github.com/Suian2/RoboAudit.mbt"
 
 license = "Apache-2.0"
 
-keywords = [ ]
+keywords = [ "robotics", "evaluation", "audit", "reproducibility" ]
 
 preferred_target = "native"
 

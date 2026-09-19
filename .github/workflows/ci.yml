@@ -4,14 +4,24 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   native:
-    runs-on: windows-latest
+    name: native / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: moonbitlang/setup-moonbit@v1
       - run: moon fmt --check
       - run: moon info
+      - name: Generated interfaces are current
+        run: git diff --exit-code
       - run: moon check --target native
       - run: moon test --target native
       - run: moon build --target native
@@ -24,18 +34,21 @@ jobs:
       - run: moon run --target native cmd/main -- --version
       - run: moon run --target native cmd/main -- --help
       - name: Validation findings return non-zero
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
           if ($LASTEXITCODE -ne 1) { throw "expected exit code 1, got $LASTEXITCODE" }
           exit 0
       - name: Invalid report format is a usage error
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           moon run --target native cmd/main -- report examples/minimal/canonical-clean.json --format yaml
           if ($LASTEXITCODE -ne 2) { throw "expected exit code 2, got $LASTEXITCODE" }
           exit 0
       - name: Missing files and directories are input errors
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
           moon run --target native cmd/main -- validate examples/missing.json
@@ -43,5 +56,23 @@ jobs:
           moon run --target native cmd/main -- validate examples
           if ($LASTEXITCODE -ne 2) { throw "expected directory-input exit code 2, got $LASTEXITCODE" }
           exit 0
+      - name: CLI exit-code contract
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set +e
+          moon run --target native cmd/main -- validate examples/minimal/audit-findings.json
+          finding_status=$?
+          moon run --target native cmd/main -- report examples/minimal/canonical-clean.json --format yaml
+          format_status=$?
+          moon run --target native cmd/main -- validate examples/missing.json
+          missing_status=$?
+          moon run --target native cmd/main -- validate examples
+          directory_status=$?
+          set -e
+          test "$finding_status" -eq 1
+          test "$format_status" -eq 2
+          test "$missing_status" -eq 2
+          test "$directory_status" -eq 2
       - run: moon run --target native cmd/main -- manifest examples/minimal/episodes.csv examples/minimal/episodes.jsonl
       - run: moon package --list

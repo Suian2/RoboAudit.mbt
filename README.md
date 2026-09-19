@@ -2,6 +2,8 @@
 
 RoboAudit.mbt is a MoonBit-first native CLI for turning robot and embodied-AI episode logs into auditable, reproducible evaluation evidence.
 
+It answers the question behind a leaderboard number: **can this result be trusted, reproduced, and compared?** A single command recalculates the evidence, identifies disclosure gaps with stable rule IDs, and produces a reviewable report without uploading experiment data.
+
 ## Problem
 
 A single success rate cannot show whether evaluation seeds were duplicated, candidates were skipped, attempts were retried, artifacts were verified, or two runs used comparable protocols. RoboAudit recalculates results from episode records and surfaces those missing disclosures with stable rule identifiers.
@@ -14,6 +16,7 @@ A single success rate cannot show whether evaluation seeds were duplicated, cand
 - RA001 through RA015 audit rules, including retry disclosure, protocol mismatches, seed overlap, and artifact verification evidence.
 - SHA-256 protocol fingerprints, sorted file manifests, and direct file verification using a binary-safe pure MoonBit implementation.
 - 100 automated tests, native release benchmarks, CI, golden report hashes, and synthetic/anonymized fixtures.
+- Windows and Ubuntu CI exercise the same native library, CLI, fixtures, and exit-code contract.
 
 Input CSV intentionally supports only simple unquoted fields. Use JSON or JSONL when values contain commas or embedded newlines. No models, videos, raw datasets, simulator assets, credentials, or unknown-license content are included.
 
@@ -73,9 +76,23 @@ The public MoonBit model consists of `Run`, `Episode`, `Stage`, `ArtifactRef`, a
 
 All parsing, normalization, validation, statistics, protocol comparison, hashing, and rendering live in MoonBit. `cmd/main` only supplies native argument handling and file I/O. See [architecture](docs/architecture.md).
 
+```mermaid
+flowchart LR
+  A[JSON / JSONL / CSV / RoboSyn] --> B[MoonBit adapters]
+  B --> C[Canonical Run]
+  C --> D[Validation + RA001–RA015]
+  C --> E[Statistics + Wilson CI]
+  C --> F[Protocol fingerprint + compare]
+  D --> G[Deterministic Markdown / JSON / CSV]
+  E --> G
+  F --> G
+```
+
 ## Tests and performance
 
 The native suite contains 100 tests, including malformed/non-finite input, adapter aliases, statistical boundaries, every audit rule, deterministic output, golden hashes, and SHA-256 vectors. Run `moon test --target native`; measured 1,000-episode results and their limitations are recorded in [benchmark evidence](benchmarks/README.md).
+
+For a short, evidence-backed walkthrough of why an apparently perfect score may still be unsafe to compare, see the [audit case study](docs/case-study.md).
 
 ## September 2026 Hackathon work
 
@@ -87,7 +104,7 @@ AI assisted implementation, tests, documentation, and troubleshooting; the contr
 
 ## Roadmap
 
-- Freeze and publish v0.1.0 after the contributor confirms the public repository and Mooncakes identity.
+- Publish v0.1.0 after the contributor creates the public repository, signs in to Mooncakes, and approves the external release operations.
 - Add quoted RFC 4180 CSV input only if real users need it; current simple CSV scope stays explicit.
 - Explore a MoonBit WASM report viewer after the native P0/P1 release, reusing the same core logic.
 
@@ -99,6 +116,7 @@ AI assisted implementation, tests, documentation, and troubleshooting; the contr
 - [Audit-rule test matrix](docs/test-matrix.md)
 - [Reproducibility](docs/reproducibility.md)
 - [Reference evidence](docs/reference-evidence.md)
+- [Audit case study](docs/case-study.md)
 - [Provenance and safe-data policy](docs/provenance.md)
 - [AI assistance](docs/ai-assistance.md)
 - [Native benchmark evidence](benchmarks/README.md)

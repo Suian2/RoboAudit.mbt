@@ -1,6 +1,6 @@
 # Submission requirements matrix
 
-Verified locally on 2026-09-14. “Complete” means implemented and backed by the named repository evidence; it does not claim that an external publication or contest action occurred.
+Verified locally on 2026-09-19. “Complete” means implemented and backed by the named repository evidence; it does not claim that an external publication or contest action occurred.
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
@@ -21,16 +21,16 @@ Verified locally on 2026-09-14. “Complete” means implemented and backed by t
 | Deterministic JSON/Markdown/CSV | Complete | Explicit output order, determinism tests, fixed JSON/Markdown SHA-256 golden tests |
 | 3+ safe fixtures | Complete | Eight synthetic/anonymized JSON/JSONL/CSV fixture files; no reference media or raw logs |
 | 60+ automated tests | Complete | Native suite: 100/100 passing |
-| CI | Complete | Windows native format/info/check/test/build, smoke, help/version, finding/usage/path exit codes, manifest, package checks |
+| Windows and Ubuntu CI | Complete locally; hosted runs await push | Two-OS native matrix with format/info/check/test/build, smoke, interface-diff, exit-code, manifest, and package checks |
 | English and Chinese README | Complete | `README.md`, `README.zh-CN.md` |
 | License/NOTICE/provenance/AI disclosure | Complete | Apache-2.0 `LICENSE`, `NOTICE`, `docs/provenance.md`, `docs/ai-assistance.md` |
 | One-page proposal and Demo | Complete locally | `hackathon/one-page-proposal.md`, `hackathon/demo-script.md`, runnable `hackathon/demo.ps1` |
 | Worklog, risk register, benchmark, checklist | Complete | Files under `hackathon/` and `benchmarks/README.md` |
 | Read-only ten-task reference evidence | Complete within ACL boundary | `docs/reference-evidence.md`; protected roots are explicitly excluded and not inferred |
 | Clean-directory reproduction | Complete | `docs/reproducibility.md`; fresh no-hardlinks clone passed all gates and stayed content-clean |
-| Public repository URL/module identity | External decision required | `moon.mod` deliberately retains an empty repository field |
+| Public repository URL/module identity | Locally configured | `moon.mod` uses `Suian2/roboaudit` and the intended public repository URL; repository creation remains external |
 | Public push, Mooncakes release, registration, final submission | External confirmation required | Not performed or claimed |
 
 ## MoonBit implementation share
 
-At this verification point, Git-tracked nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 79 in two `*.yml` automation files. MoonBit therefore accounts for 94.64% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.
+At this verification point, Git-tracked and newly prepared nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 109 in two `*.yml` automation files. MoonBit therefore accounts for 93.59% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.

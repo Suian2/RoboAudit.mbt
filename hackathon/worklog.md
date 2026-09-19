@@ -28,3 +28,12 @@
 - Expanded both READMEs with the explicit Problem, Examples, Schema/Audit, Architecture, Tests, September work, AI/Provenance, and Roadmap sections requested by the acceptance guidance. A transparent tracked nonblank-line snapshot counted 2,542 MoonBit lines versus 65 PowerShell Demo lines and 70 YAML automation lines, or 94.96% MoonBit for that stated code-and-automation set.
 - Verified the native CLI help path exits 0 and both a missing file and directory-as-input produce one-line errors with exit status 2. Added these cases to Windows CI alongside the existing finding and invalid-format exit checks.
 - After expanding CI, the same nonblank-line method reports 2,542 MoonBit, 65 PowerShell, and 79 YAML lines, or 94.64% MoonBit; the submission matrix carries the current snapshot.
+
+## 2026-09-19
+
+- Confirmed the contributor's final identities: GitHub repository `Suian2/RoboAudit.mbt` and Mooncakes module `Suian2/roboaudit`. Updated module metadata, imports, generated interfaces, keywords, requirements, risks, and release checklist without creating or publishing any external repository.
+- Expanded `.gitattributes` from generated-interface-only handling to repository-wide LF text normalization with explicit binary extensions. This addresses the reproduced Windows-clean-clone hash drift in the CSV/JSONL fixture bytes.
+- Expanded native CI from Windows only to an Ubuntu/Windows matrix. Both runners execute formatting, interface freshness, check, all tests, build, input/report smoke tests, shell-specific exit-code gates, manifest generation, and package listing with read-only token permissions.
+- Added an evidence-backed audit case study. It shows recalculation and uncertainty for a clean run, RA006 for a skipped RoboSyn-shaped candidate, and refusal to report a naive `0/2` versus `2/2` delta when observation protocols differ.
+- Re-ran `moon fmt`, `moon info`, native check, all 100 tests, and native build after the identity and documentation changes; all passed. The only emitted compiler warning remains the upstream async/Windows SDK `EINVAL` macro redefinition.
+- Recorded a new native release benchmark on the synthetic 1,000-episode workload: validation averaged 5.15 ms +/- 226.96 us over 10 x 22 runs; JSON reporting averaged 5.42 ms +/- 228.93 us over 10 x 19 runs. The benchmark page now calls this a recorded run rather than implying cross-run comparability.

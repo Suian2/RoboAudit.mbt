@@ -9,5 +9,5 @@
 | CSV parser overclaims RFC 4180 support | Controlled | Input is documented as simple unquoted CSV; output applies quote doubling. |
 | Quadratic duplicate detection on very large runs | Accepted for v0.1 | Current benchmark is 1,000 episodes; optimize after correctness if larger corpora require it. |
 | Mooncakes publication cannot be preflighted without login | Open external | Package list and ZIP succeed; repeat `moon publish --dry-run` after user login. |
-| Public module/repository identity is not yet known | Open external | Keep the repository field empty rather than inventing a URL; set the final URL and confirm the Mooncakes namespace with the contributor before publication. |
+| Public repository does not exist yet | Open external | The contributor confirmed `Suian2/roboaudit` and `https://github.com/Suian2/RoboAudit.mbt`; create the public repository only after explicit approval. |
 | Public repository and formal submission incomplete | Open external | Requires explicit user confirmation after local completion audit. |

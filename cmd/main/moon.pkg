@@ -1,5 +1,5 @@
 import {
-  "moonbit-hackathon/roboaudit" @lib,
+  "Suian2/roboaudit" @lib,
   "moonbitlang/core/argparse",
   "moonbitlang/async",
   "moonbitlang/async/fs",

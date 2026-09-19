@@ -29,6 +29,6 @@ Generated report ordering is explicit. Hashes are computed over original file by
 
 On 2026-09-14, commit `9ab064b4ee2dca26c192ac7207a3d2db5ed88fce` was cloned with `--no-hardlinks` into a new directory. With the official MoonBit toolchain and the pinned `moonbitlang/async@0.21.3` dependency resolved from the local Moon cache, the checkout passed format checking, interface generation, native checking, all 100 tests, native building, the complete `hackathon/demo.ps1` run, and package listing. `git diff --exit-code` and `git status --short` were clean after the full sequence. No source file or build directory from the original checkout was copied into the clone.
 
-Generated `*.mbti` interfaces are pinned to LF in `.gitattributes`, preventing `moon info` from producing Windows `core.autocrlf`-only working-tree changes.
+All tracked text and fixture formats are pinned to LF in `.gitattributes`; common image/archive extensions are explicitly binary. This keeps byte-level fixture manifests and generated `*.mbti` interfaces stable across Windows and Linux checkouts rather than allowing `core.autocrlf` to change their hashes.
 
 The native C build emits an `EINVAL` macro-redefinition warning from the upstream async package against the installed Windows SDK. It does not originate in RoboAudit.mbt and did not affect any command exit status.

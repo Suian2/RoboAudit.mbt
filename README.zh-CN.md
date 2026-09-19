@@ -2,6 +2,8 @@
 
 RoboAudit.mbt 是一个以 MoonBit 为主体实现的原生命令行工具和可复用库，用于把机器人与具身智能 episode 日志转换成可审计、可复现的评测证据。
 
+它回答排行榜数字背后的关键问题：**这个结果是否可信、可复现、可比较？** 一条命令即可重算证据、用稳定规则编号指出披露缺口，并在不上传实验数据的情况下生成可评审报告。
+
 ## 问题
 
 单一成功率无法说明评测种子是否重复、候选是否被跳过、回合是否重试、交付物是否校验，以及两次运行是否采用可比较的协议。RoboAudit 从 episode 记录重新计算结果，并用稳定的规则编号揭示这些缺失披露。
@@ -14,6 +16,7 @@ RoboAudit.mbt 是一个以 MoonBit 为主体实现的原生命令行工具和可
 - 实现 RA001–RA015，包括重试披露、协议不兼容、训练/评测种子重叠、artifact 校验及 provenance/code revision 完整性。
 - 使用纯 MoonBit、二进制安全的 SHA-256 生成协议指纹、排序 manifest，并直接校验文件。
 - 包含 100 项自动测试、native release benchmark、CI、固定报告哈希，以及合成或匿名 fixture。
+- Windows 与 Ubuntu CI 使用同一套原生库、CLI、fixture 和退出码契约。
 
 CSV 输入有意限定为简单无引号字段；值含逗号或换行时请使用 JSON/JSONL。仓库不包含模型、视频、原始数据集、仿真资产、凭据或许可不明内容。
 
@@ -77,6 +80,8 @@ powershell -ExecutionPolicy Bypass -File hackathon/demo.ps1
 
 Native 测试套件包含 100 项测试，覆盖异常/非有限数值、adapter 字段别名、统计边界、每条审计规则、确定性输出、黄金哈希和 SHA-256 向量。运行 `moon test --target native`；1,000 episode 实测结果及适用边界见 [benchmark 证据](benchmarks/README.md)。
 
+如需快速理解为什么“满分结果”仍可能不适合比较，请阅读基于真实 CLI 输出编写的[审计案例](docs/case-study.md)。
+
 ## 2026 年 9 月黑客松新增工作
 
 本期开始前，仓库只是可编译的 MoonBit 骨架，没有审计实现。本期完成了 canonical 模型、四种输入形态、三种报告格式、RA001–RA015、协议安全比较、manifest、100 项测试、CI、benchmark、fixture、文档和可执行 Demo。既有 RoboSynChallenge 项目仅作为只读需求来源，不被复制，也不计入本期工作量。
@@ -99,6 +104,7 @@ AI 用于辅助实现、测试、文档和故障排查；贡献者仍负责审�
 - [审计规则测试矩阵](docs/test-matrix.md)
 - [复现步骤](docs/reproducibility.md)
 - [参考证据](docs/reference-evidence.md)
+- [审计案例](docs/case-study.md)
 - [来源与安全数据政策](docs/provenance.md)
 - [AI 辅助说明](docs/ai-assistance.md)
 - [Native benchmark 证据](benchmarks/README.md)
