@@ -78,7 +78,7 @@ powershell -ExecutionPolicy Bypass -File hackathon/demo.ps1
 
 ## 测试与性能
 
-Native 测试套件包含 100 项测试，覆盖异常/非有限数值、adapter 字段别名、统计边界、每条审计规则、确定性输出、黄金哈希和 SHA-256 向量。运行 `moon test --target native`；1,000 episode 实测结果及适用边界见 [benchmark 证据](benchmarks/README.md)。
+Native 测试套件包含 100 项测试，覆盖异常/非有限数值、adapter 字段别名、统计边界、每条审计规则、确定性输出、黄金哈希和 SHA-256 向量。2026-09-19 的 MoonBit 覆盖率摘要显示：核心 `roboaudit.mbt` 为 778/824 行（94.42%），全部插桩源码为 831/963 行（86.29%）；CLI 入口通过外部进程验收，因此明确不计入核心比例。运行 `moon test --target native`；详见[测试矩阵](docs/test-matrix.md)和 1,000 episode 的 [benchmark 证据](benchmarks/README.md)。
 
 如需快速理解为什么“满分结果”仍可能不适合比较，请阅读基于真实 CLI 输出编写的[审计案例](docs/case-study.md)。
 

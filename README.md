@@ -90,7 +90,7 @@ flowchart LR
 
 ## Tests and performance
 
-The native suite contains 100 tests, including malformed/non-finite input, adapter aliases, statistical boundaries, every audit rule, deterministic output, golden hashes, and SHA-256 vectors. Run `moon test --target native`; measured 1,000-episode results and their limitations are recorded in [benchmark evidence](benchmarks/README.md).
+The native suite contains 100 tests, including malformed/non-finite input, adapter aliases, statistical boundaries, every audit rule, deterministic output, golden hashes, and SHA-256 vectors. The 2026-09-19 MoonBit coverage summary reports 778/824 instrumented lines (94.42%) in the core `roboaudit.mbt` file and 831/963 (86.29%) overall; the CLI entrypoint is exercised out of process and is explicitly excluded from the core figure. Run `moon test --target native`; see the [test matrix](docs/test-matrix.md) and measured 1,000-episode [benchmark evidence](benchmarks/README.md).
 
 For a short, evidence-backed walkthrough of why an apparently perfect score may still be unsafe to compare, see the [audit case study](docs/case-study.md).
 

@@ -11,4 +11,4 @@
 - Added schema version, policy, seed policy, environment, duration, run-level failure annotations, failure proportions, relative success-rate comparison, and failure-category deltas.
 - Added `report --format`, deterministic JSON/Markdown golden hashes, protocol-incompatibility fixtures, skipped/retry fixtures, and an auditable ten-task read-only reference evidence record.
 - Normalized RoboSyn `feasibility_filter.skipped_seeds`, treated an enabled feasibility filter as retry disclosure, and bounded candidate indices against the disclosed completed-plus-skipped population.
-- Finalized the `Suian2/roboaudit` release identity and intended repository URL, normalized all text fixtures to LF for portable byte hashes, expanded CI to Windows and Ubuntu, and added an evidence-backed audit case study plus a timed judge demo.
+- Finalized the `Suian2/roboaudit` release identity and intended repository URL, normalized all text fixtures to LF for portable byte hashes, expanded CI to Windows and Ubuntu with a disclosed coverage summary, and added an evidence-backed audit case study plus a timed judge demo.

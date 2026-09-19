@@ -21,3 +21,19 @@ Every audit rule has an explicit triggering case and a non-triggering boundary o
 | RA015 | `missing provenance or code revision is RA015` | `complete provenance and code revision pass RA015` |
 
 Additional tests cover malformed/non-finite input, JSON escaping, Unicode, JSONL/CSV/RoboSyn feasibility adapters, deterministic ordering, fixed JSON/Markdown golden hashes, Wilson interval boundaries, grouped statistics, failure proportions/deltas, extended canonical metadata, manifest hashing primitives, and the public library surface. The native suite currently contains 100 tests.
+
+## Coverage evidence
+
+Command recorded on 2026-09-19 with MoonBit 0.1.20260904:
+
+```powershell
+moon coverage analyze
+moon coverage report -- -f summary
+```
+
+| Scope | Covered / instrumented lines | Coverage |
+| --- | ---: | ---: |
+| Core `roboaudit.mbt` | 778 / 824 | 94.42% |
+| All instrumented project source | 831 / 963 | 86.29% |
+
+The coverage runner reports `cmd/main/main.mbt` as 0/86 because CLI acceptance tests and `hackathon/demo.ps1` invoke the compiled program as an external process rather than inside the instrumented test process. Those commands are still exercised by both the Demo and CI, but they are not added to the core-library percentage. This limitation is retained instead of presenting the overall number as core coverage.

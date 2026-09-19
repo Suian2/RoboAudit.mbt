@@ -18,6 +18,7 @@ Verified locally on 2026-09-19. “Complete” means implemented and backed by t
 | Skipped reasons and retry disclosure | Complete | RA006/RA007 and `examples/minimal/skipped-and-retries.json` |
 | Manifest/hash verification | Complete | Binary-safe pure MoonBit SHA-256, sorted manifest CLI, `verify-file`, tests |
 | RA001–RA015 | Complete | `docs/audit-rules.md` and per-rule positive/negative cases in `docs/test-matrix.md` |
+| Coverage evidence | Complete | Core 778/824 (94.42%), overall 831/963 (86.29%); CLI instrumentation limitation disclosed in `docs/test-matrix.md` |
 | Deterministic JSON/Markdown/CSV | Complete | Explicit output order, determinism tests, fixed JSON/Markdown SHA-256 golden tests |
 | 3+ safe fixtures | Complete | Eight synthetic/anonymized JSON/JSONL/CSV fixture files; no reference media or raw logs |
 | 60+ automated tests | Complete | Native suite: 100/100 passing |
@@ -33,4 +34,4 @@ Verified locally on 2026-09-19. “Complete” means implemented and backed by t
 
 ## MoonBit implementation share
 
-At this verification point, Git-tracked and newly prepared nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 109 in two `*.yml` automation files. MoonBit therefore accounts for 93.59% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.
+At this verification point, Git-tracked and newly prepared nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 112 in two `*.yml` automation files. MoonBit therefore accounts for 93.49% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.

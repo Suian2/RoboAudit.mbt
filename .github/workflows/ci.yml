@@ -24,6 +24,9 @@ jobs:
         run: git diff --exit-code
       - run: moon check --target native
       - run: moon test --target native
+      - name: Coverage summary
+        if: runner.os == 'Linux'
+        run: moon coverage analyze -- -f summary
       - run: moon build --target native
       - run: moon run --target native cmd/main -- report examples/minimal/canonical-clean.json
       - run: moon run --target native cmd/main -- report examples/minimal/canonical-clean.json --format json
