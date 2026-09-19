@@ -34,4 +34,4 @@ Verified locally on 2026-09-19. “Complete” means implemented and backed by t
 
 ## MoonBit implementation share
 
-At this verification point, Git-tracked and newly prepared nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 112 in two `*.yml` automation files. MoonBit therefore accounts for 93.49% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.
+At this verification point, Git-tracked and newly prepared nonblank lines are 2,542 in eight `*.mbt` files, 65 in one `*.ps1` Demo runner, and 127 in two `*.yml` automation files. MoonBit therefore accounts for 92.98% of this explicitly defined code-and-automation line set. Markdown, fixtures, licenses, configuration, and generated `*.mbti` interfaces are excluded from both numerator and denominator; this is a transparent repository snapshot, not a universal language-statistics claim.

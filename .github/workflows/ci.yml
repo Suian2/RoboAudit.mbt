@@ -7,9 +7,6 @@ on:
 permissions:
   contents: read
 
-env:
-  MOONBIT_INSTALL_VERSION: 0.1.20260904
-
 jobs:
   native:
     name: native / ${{ matrix.os }}
@@ -19,12 +16,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install MoonBit (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s "$MOONBIT_INSTALL_VERSION"
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
       - name: Install MoonBit (Windows)
         if: runner.os == 'Windows'
