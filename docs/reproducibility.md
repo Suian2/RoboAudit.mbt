@@ -27,7 +27,7 @@ Generated report ordering is explicit. Hashes are computed over original file by
 
 ## Verified clean checkout
 
-On 2026-09-19, release-candidate commit `22986a39d8f73f95916a9cb59a0d44cfea7da56f` was cloned with `--no-hardlinks` into a new directory. With the official MoonBit toolchain and the pinned `moonbitlang/async@0.21.3` dependency resolved from the local Moon cache, the checkout passed format checking, interface generation, a clean generated-interface diff, native checking, all 100 tests, native building, the complete `hackathon/demo.ps1` run, and package listing. `git status --short` remained clean.
+On 2026-09-19, release-candidate commit `3378ba7fabc7a4e3887a5693037da3ab00fa4653` was cloned with `--no-hardlinks` into a new directory. With the official MoonBit toolchain and the pinned `moonbitlang/async@0.21.3` dependency resolved from the local Moon cache, the checkout passed format checking, interface generation, a clean generated-interface diff, native checking, all 100 tests, native building, the complete `hackathon/demo.ps1` run, and package listing. `git status --short` remained clean.
 
 The main checkout and clean clone produced identical byte evidence:
 

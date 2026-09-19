@@ -11,4 +11,4 @@
 | Mooncakes publication cannot be preflighted without login | Open external | Package list and ZIP succeed; repeat `moon publish --dry-run` after user login. |
 | Public repository does not exist yet | Open external | The contributor confirmed `Suian2/roboaudit` and `https://github.com/Suian2/RoboAudit.mbt`; create the public repository only after explicit approval. |
 | Public repository and formal submission incomplete | Open external | Requires explicit user confirmation after local completion audit. |
-| Existing unpublished commits contain the configured author email | Open external | Ask the contributor whether it may be public; if not, rewrite all local commits to the account's GitHub noreply address before the first push. |
+| Git commit metadata could expose a personal email | Resolved locally | With explicit contributor approval, all unpublished author and committer emails now use the account's ID-based GitHub noreply address. |
