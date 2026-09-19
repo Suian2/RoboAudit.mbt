@@ -29,8 +29,8 @@ Verified locally on 2026-09-19. “Complete” means implemented and backed by t
 | Worklog, risk register, benchmark, checklist | Complete | Files under `hackathon/` and `benchmarks/README.md` |
 | Read-only ten-task reference evidence | Complete within ACL boundary | `docs/reference-evidence.md`; protected roots are explicitly excluded and not inferred |
 | Clean-directory reproduction | Complete | `docs/reproducibility.md`; fresh no-hardlinks clone passed all gates and stayed content-clean |
-| Public repository URL/module identity | Locally configured | `moon.mod` uses `Suian2/roboaudit` and the intended public repository URL; repository creation remains external |
-| Public push, Mooncakes release, registration, final submission | External confirmation required | Not performed or claimed |
+| Public repository and module identity | Complete | Public `https://github.com/Suian2/RoboAudit.mbt`; `moon.mod` uses `Suian2/roboaudit` |
+| Mooncakes release, registration, final submission | External confirmation required | Not performed or claimed |
 
 ## MoonBit implementation share
 

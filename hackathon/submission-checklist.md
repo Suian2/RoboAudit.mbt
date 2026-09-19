@@ -9,6 +9,7 @@
 - [x] Set the intended public repository URL and `Suian2/roboaudit` module identity in `moon.mod`.
 - [x] Rewrote all unpublished author and committer metadata to the contributor-confirmed GitHub noreply address before public push.
 - [ ] Repeat `moon publish --dry-run` after Mooncakes login; the package/check phase succeeds but credentials are absent.
-- [ ] Create/push a public repository only after contributor confirmation.
+- [x] Created and pushed the public `Suian2/RoboAudit.mbt` repository after contributor confirmation.
+- [ ] Confirm the Windows and Ubuntu GitHub Actions jobs pass on the public repository.
 - [ ] Complete official registration and final submission only after contributor confirmation.
 - [ ] Confirm current contest notices and participation-group requirements before submitting.

@@ -1,5 +1,8 @@
 # RoboAudit.mbt
 
+[![CI](https://github.com/Suian2/RoboAudit.mbt/actions/workflows/ci.yml/badge.svg)](https://github.com/Suian2/RoboAudit.mbt/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 RoboAudit.mbt is a MoonBit-first native CLI for turning robot and embodied-AI episode logs into auditable, reproducible evaluation evidence.
 
 It answers the question behind a leaderboard number: **can this result be trusted, reproduced, and compared?** A single command recalculates the evidence, identifies disclosure gaps with stable rule IDs, and produces a reviewable report without uploading experiment data.
@@ -104,7 +107,7 @@ AI assisted implementation, tests, documentation, and troubleshooting; the contr
 
 ## Roadmap
 
-- Publish v0.1.0 after the contributor creates the public repository, signs in to Mooncakes, and approves the external release operations.
+- Publish v0.1.0 after the contributor signs in to Mooncakes and approves the package release operation.
 - Add quoted RFC 4180 CSV input only if real users need it; current simple CSV scope stays explicit.
 - Explore a MoonBit WASM report viewer after the native P0/P1 release, reusing the same core logic.
 
