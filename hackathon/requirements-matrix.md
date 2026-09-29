@@ -22,7 +22,7 @@ Verified locally on 2026-09-19. “Complete” means implemented and backed by t
 | Deterministic JSON/Markdown/CSV | Complete | Explicit output order, determinism tests, fixed JSON/Markdown SHA-256 golden tests |
 | 3+ safe fixtures | Complete | Eight synthetic/anonymized JSON/JSONL/CSV fixture files; no reference media or raw logs |
 | 60+ automated tests | Complete | Native suite: 100/100 passing |
-| Windows and Ubuntu CI | Complete locally; hosted runs await push | Two-OS native matrix with format/info/check/test/build, smoke, interface-diff, exit-code, manifest, and package checks |
+| Windows and Ubuntu CI | Complete | Public two-OS native runs pass format/info/check/test/build, smoke, interface-diff, exit-code, manifest, and package checks |
 | English and Chinese README | Complete | `README.md`, `README.zh-CN.md` |
 | License/NOTICE/provenance/AI disclosure | Complete | Apache-2.0 `LICENSE`, `NOTICE`, `docs/provenance.md`, `docs/ai-assistance.md` |
 | One-page proposal and Demo | Complete locally | `hackathon/one-page-proposal.md`, `hackathon/demo-script.md`, runnable `hackathon/demo.ps1` |
@@ -30,7 +30,8 @@ Verified locally on 2026-09-19. “Complete” means implemented and backed by t
 | Read-only ten-task reference evidence | Complete within ACL boundary | `docs/reference-evidence.md`; protected roots are explicitly excluded and not inferred |
 | Clean-directory reproduction | Complete | `docs/reproducibility.md`; fresh no-hardlinks clone passed all gates and stayed content-clean |
 | Public repository and module identity | Complete | Public `https://github.com/Suian2/RoboAudit.mbt`; `moon.mod` uses `Suian2/roboaudit` |
-| Mooncakes release, registration, final submission | External confirmation required | Not performed or claimed |
+| Mooncakes release and registration | Complete | `Suian2/roboaudit@0.1.0` is public; registration was submitted and the contributor joined the event group on 2026-09-29 |
+| Final acceptance follow-up | Pending external review | Monitor organizer email and event-group notices |
 
 ## MoonBit implementation share
 

@@ -92,7 +92,7 @@ AI 用于辅助实现、测试、文档和故障排查；贡献者仍负责审�
 
 ## Roadmap
 
-- 贡献者确认公开仓库和 Mooncakes 身份后冻结并发布 v0.1.0。
+- 在已发布的 [`Suian2/roboaudit@0.1.0`](https://mooncakes.io/docs/Suian2/roboaudit) 基础上保持兼容性。
 - 仅在真实用户需要时增加带引号的 RFC 4180 CSV 输入；当前简单 CSV 边界保持明确。
 - Native P0/P1 发布后再探索 MoonBit WASM 报告查看器，并复用同一核心逻辑。
 

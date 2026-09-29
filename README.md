@@ -107,7 +107,7 @@ AI assisted implementation, tests, documentation, and troubleshooting; the contr
 
 ## Roadmap
 
-- Publish v0.1.0 after the contributor signs in to Mooncakes and approves the package release operation.
+- Maintain compatibility after the published [`Suian2/roboaudit@0.1.0`](https://mooncakes.io/docs/Suian2/roboaudit) release.
 - Add quoted RFC 4180 CSV input only if real users need it; current simple CSV scope stays explicit.
 - Explore a MoonBit WASM report viewer after the native P0/P1 release, reusing the same core logic.
 
