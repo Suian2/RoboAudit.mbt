@@ -7,6 +7,12 @@ RoboAudit.mbt is a MoonBit-first native CLI for turning robot and embodied-AI ep
 
 It answers the question behind a leaderboard number: **can this result be trusted, reproduced, and compared?** A single command recalculates the evidence, identifies disclosure gaps with stable rule IDs, and produces a reviewable report without uploading experiment data.
 
+## Scope and interoperability
+
+RoboAudit does **not** assume that the ecosystem already has one universal log standard. It publishes its own small canonical evidence schema (`Run`, `Episode`, `Stage`, `ArtifactRef`, and `AuditFinding`) and normalizes source-specific inputs through adapters before validation, statistics, comparison, or reporting. Adding a source format changes an adapter, not the core analysis pipeline.
+
+Its deliberate scope is an evaluation made of repeated episodes or attempts with success/failure outcomes. Within that boundary, the same pipeline can review robotics, embodied-AI, simulation-benchmark, and general episode-based A/B results. It is not intended to audit arbitrary application or infrastructure logs.
+
 ## Problem
 
 A single success rate cannot show whether evaluation seeds were duplicated, candidates were skipped, attempts were retried, artifacts were verified, or two runs used comparable protocols. RoboAudit recalculates results from episode records and surfaces those missing disclosures with stable rule identifiers.

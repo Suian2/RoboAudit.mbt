@@ -11,4 +11,5 @@
 | Mooncakes publication cannot be preflighted without login | Resolved | Authenticated server-side dry-run accepted the package; the extracted package passed `moon check`. |
 | Public repository could expose unreviewed content | Resolved | Contributor approved publication after clean-clone, privacy, package, and Git-history audits; `Suian2/RoboAudit.mbt` is public. |
 | Mooncakes publication and formal submission incomplete | Resolved for entrant actions | Version 0.1.0 is public on Mooncakes and GitHub; registration is submitted and the contributor joined the event group. Organizer review remains external. |
+| Reviewers interpret the project as relying on a universal log standard | Mitigated; reconsideration pending | The application and both READMEs now state that RoboAudit owns a documented canonical schema, uses source adapters, and is scoped to episode-based evaluation evidence rather than arbitrary logs. |
 | Git commit metadata could expose a personal email | Resolved locally | With explicit contributor approval, all unpublished author and committer emails now use the account's ID-based GitHub noreply address. |

@@ -13,4 +13,4 @@
 - [x] Confirmed the Windows and Ubuntu GitHub Actions jobs pass on the public repository (CI run 4, commit `793b6e8`).
 - [x] Submitted the official registration and joined the required event group after contributor confirmation.
 - [x] Published GitHub tag and Release `v0.1.0` for the same source commit as the Mooncakes package.
-- [ ] Monitor organizer review, email, and event-group notices for any separate acceptance follow-up.
+- [ ] Resubmit the revised one-page application on 2026-09-30 and request organizer reconsideration in the event group.

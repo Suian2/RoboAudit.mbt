@@ -46,3 +46,9 @@
 - Recounted the documented code-and-automation set after the cross-platform installer expansion: 2,542 nonblank MoonBit lines, 65 PowerShell Demo lines, and 127 YAML automation lines, or 92.98% MoonBit under the same disclosed method.
 - Public CI run 4 on commit `793b6e889487ac4eaa3c15e4b1fbce6374928806` completed successfully. Both `native / ubuntu-latest` and `native / windows-latest` passed the full format, generated-interface, check, 100-test, coverage, build, CLI smoke/exit-code, manifest, and package workflow.
 - On 2026-09-29, the contributor submitted the official registration and joined the required event group. After GitHub OAuth login, the authenticated Mooncakes dry-run returned `202 Accepted` and explicitly reported success; formal publication returned `200 OK`. The public `Suian2/roboaudit@0.1.0` documentation page was then verified. Annotated Git tag `v0.1.0` and the matching public GitHub Release point to source commit `802e83a9604867dbdcffae9cd25f36619b88ae4a`.
+
+## 2026-09-30
+
+- The initial application review rejected the project because the submitted wording appeared to assume a missing universal log standard and did not establish generality. No code or test defect was reported.
+- Reframed the application precisely as a structured evaluation-evidence validator: RoboAudit defines its own documented canonical schema, normalizes source-specific inputs through adapters, and deliberately targets repeated episode/attempt evaluations rather than arbitrary logs. Added the same scope and interoperability statement to both READMEs.
+- Re-ran formatting, interface generation, native check, and all 100 native tests after the documentation revision; all passed. Resubmission and organizer reconsideration remain external contributor actions.
